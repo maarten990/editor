@@ -7,6 +7,7 @@ typedef wchar_t rune;
 
 struct Gapbuffer {
     rune *buffer;
+    rune *display;
     int gapsize;
     int gapstart;
     int gapend;

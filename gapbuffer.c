@@ -23,6 +23,7 @@ struct Gapbuffer new_Gapbuffer(const char *contents, int gapsize)
 
     struct Gapbuffer buf = {
         .buffer = calloc(content_len + gapsize, sizeof(rune)),
+        .display = NULL,
         .gapsize = gapsize,
         .gapstart = 0,
         .gapend = gapsize,
@@ -32,7 +33,6 @@ struct Gapbuffer new_Gapbuffer(const char *contents, int gapsize)
     // fill the buffer starting at the end of the gap
     memcpy_char_to_rune(buf.buffer + buf.gapend, contents, content_len);
 
-    printf("%d!\n", buf.gapstart);
     return buf;
 }
 
@@ -96,7 +96,7 @@ int move_cursor(struct Gapbuffer *buf, int offset)
             n_moved += 1;
         }
     } else {
-        for (int i = offset; i < 0; ++i ){
+        for (int i = offset; i < 0; ++i ) {
             if (buf->gapstart == 0) {
                 break;
             }
@@ -114,20 +114,20 @@ int move_cursor(struct Gapbuffer *buf, int offset)
 
 rune *display(struct Gapbuffer *buf)
 {
-    // TODO: make this global or something to remove memory leak
-    rune *out = malloc(sizeof(rune) * (buf->bufsize - buf->gapsize) + 1);
+    buf->display = realloc(buf->display,
+                           sizeof(rune) * (buf->bufsize - buf->gapsize) + 1);
 
     int out_idx = 0;
     for (int i = 0; i < buf->bufsize; i++) {
         if (i >= buf->gapstart && i < buf->gapend)
             continue;
         else {
-            out[out_idx] = buf->buffer[i];
+            buf->display[out_idx] = buf->buffer[i];
             out_idx += 1;
         }
     }
 
-    out[out_idx] = '\0';
+    buf->display[out_idx] = '\0';
 
-    return out;
+    return buf->display;
 }
