@@ -3,11 +3,11 @@
 
 #include <wchar.h>
 
-typedef wchar_t rune;
+typedef char rune;
 
 struct Gapbuffer {
     rune *buffer;
-    rune *display;
+    rune *disp_buffer;
     int gapsize;
     int gapstart;
     int gapend;
@@ -17,29 +17,31 @@ struct Gapbuffer {
 /**
  * Construct a new gapbuffer.
  */
-struct Gapbuffer new_Gapbuffer(const char *contents, int gapsize);
+struct Gapbuffer *gapbuffer_new(rune *contents, int gapsize);
 
 /**
  * Free a gapbuffer's allocated memory.
  */
-void free_Gapbuffer(struct Gapbuffer *buf);
+void gapbuffer_free(struct Gapbuffer *buf);
 
 /**
  * If the gap is closed, recreate it at the full gapsize.
  */
-void ensure_gapsize(struct Gapbuffer *buf);
+void gapbuf_ensure_gapsize(struct Gapbuffer *buf);
 
 /**
  * Insert a single character at the first point in the gap.
  * @param ch a character to be inserted
  */
-void insert_char(struct Gapbuffer *buf, rune ch);
+void gapbuf_insert_char(struct Gapbuffer *buf, rune ch);
 
 /**
  * Delete characters backwards starting from the gap's opening.
  * @param n_chars the number of characters to delete
+ *
+ * @return The number of positions the cursor succesfully moved backwards.
  */
-void delete_backwards(struct Gapbuffer *buf, int n_chars);
+int gapbuf_delete_backwards(struct Gapbuffer *buf, int n_chars);
 
 /**
  * Move the cursor by a given offset.
@@ -48,11 +50,11 @@ void delete_backwards(struct Gapbuffer *buf, int n_chars);
  *
  * @return The number of positions the cursor succesfully moved.
  */
-int move_cursor(struct Gapbuffer *buf, int offset);
+int gapbuf_move_cursor(struct Gapbuffer *buf, int offset);
 
 /**
  * Return a string representation of the entire buffer.
  */
-rune *display(struct Gapbuffer *buf);
+rune *gapbuf_display(struct Gapbuffer *buf);
 
 #endif
