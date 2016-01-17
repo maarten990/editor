@@ -9,10 +9,10 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    struct Lines *buffer = lines_new();
-    lines_add(buffer, line_new("Hello World!"));
-    lines_add(buffer, line_new("This is line 2."));
-    lines_add(buffer, line_new("I am a duck."));
+    struct Buffer *buffer = buffer_new();
+    buffer_add_line(buffer, line_new("Hello World!"));
+    buffer_add_line(buffer, line_new("This is line 2."));
+    buffer_add_line(buffer, line_new("I am a duck."));
     ui_loop(buffer);
 
     ui_destroy();

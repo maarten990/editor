@@ -30,6 +30,8 @@ int line_backspace(struct Line *line);
 // return a string container a representation of the line
 rune *line_display(struct Line *line);
 
+int line_move_cursor_abs(struct Line *line, int cursor);
+
 // create a new list of lines
 struct Lines *lines_new();
 

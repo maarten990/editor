@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <MacTypes.h>
 #include "line.h"
 
 struct Line *line_new(rune *contents)
@@ -46,6 +47,12 @@ int line_backspace(struct Line *line)
     line->cursor -= deleted;
 
     return deleted;
+}
+
+int line_move_cursor_abs(struct Line *line, int cursor)
+{
+    int offset = cursor - line->cursor;
+    return line_move_cursor(line, offset);
 }
 
 struct Lines *lines_new()
@@ -104,3 +111,4 @@ void lines_remove(struct Lines *list, struct Line *line)
 
     line_free(line);
 }
+

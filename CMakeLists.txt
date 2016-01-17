@@ -10,7 +10,9 @@ set(SOURCE_FILES
     line.h
     main.c
     tui.c
-    tui.h)
+    tui.h
+    buffer.c
+    buffer.h)
 
 add_executable(Editor ${SOURCE_FILES})
 target_link_libraries(Editor -ltermbox)
