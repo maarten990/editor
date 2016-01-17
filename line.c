@@ -8,6 +8,9 @@ struct Line *line_new(rune *contents)
     line->gapbuf = gapbuffer_new(contents, 16);
     line->cursor = line->gapbuf->gapstart;
 
+    line->next = NULL;
+    line->previous = NULL;
+
     return line;
 }
 
@@ -43,4 +46,61 @@ int line_backspace(struct Line *line)
     line->cursor -= deleted;
 
     return deleted;
+}
+
+struct Lines *lines_new()
+{
+    struct Lines *lines = malloc(sizeof(struct Lines));
+    lines->first = NULL;
+    lines->last = NULL;
+
+    return lines;
+}
+
+void lines_free(struct Lines *list)
+{
+    if (list->first != NULL) {
+        struct Line *next;
+        struct Line *line = list->first;
+
+        do {
+            next = line->next;
+            line_free(line);
+        } while (next != NULL);
+    }
+
+    free(list);
+}
+
+void lines_add(struct Lines *list, struct Line *line)
+{
+    // uninitialized list
+    if (list->last == NULL) {
+        list->first = line;
+        list->last = line;
+    }
+
+    struct Line *previous_last = list->last;
+    previous_last->next = line;
+    line->previous = previous_last;
+    list->last = line;
+}
+
+void lines_add_after(struct Lines *list, struct Line *before,
+                     struct Line *line)
+{
+    struct Line *after = before->next;
+    before->next = line;
+    after->previous = line;
+
+    line->previous = before;
+    line->next = after;
+}
+
+void lines_remove(struct Lines *list, struct Line *line)
+{
+    line->previous = line->next;
+    line->next = line->previous;
+
+    line_free(line);
 }
