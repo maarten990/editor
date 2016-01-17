@@ -4,11 +4,16 @@
 
 int main(int argc, char *argv[])
 {
-    ui_init();
+    if (ui_init() != 0) {
+        printf("Error initializing termbox\n");
+        return -1;
+    }
 
-    // TODO: replace the single line with a linked list of lines or something
-    struct Line *line = line_new("Hello World!");
-    ui_loop(line);
+    struct Lines *buffer = lines_new();
+    lines_add(buffer, line_new("Hello World!"));
+    lines_add(buffer, line_new("This is line 2."));
+    lines_add(buffer, line_new("I am a duck."));
+    ui_loop(buffer);
 
     ui_destroy();
     return 0;
