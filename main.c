@@ -4,11 +4,6 @@
 
 int main(int argc, char *argv[])
 {
-    if (ui_init() != 0) {
-        printf("Error initializing termbox\n");
-        return -1;
-    }
-
     struct Buffer *buffer = buffer_new();
 
     // no arguments, use some dummy data
@@ -23,7 +18,13 @@ int main(int argc, char *argv[])
             return -1;
         }
     } else {
-        printf("Error: too many arguments given.");
+        printf("Error: too many arguments given.\n");
+        return -1;
+    }
+
+    if (ui_init() != 0) {
+        printf("Error initializing termbox\n");
+        return -1;
     }
 
     ui_loop(buffer);
