@@ -32,8 +32,14 @@ void gapbuffer_free(struct Gapbuffer *buf)
 void gapbuf_ensure_gapsize(struct Gapbuffer *buf)
 {
     if (buf->gapend == buf->gapstart) {
-        buf->buffer = realloc(buf->buffer,
-                              sizeof(rune) * (buf->bufsize + buf->gapsize));
+        char *newbuf = realloc(buf->buffer,
+                               sizeof(rune) * (buf->bufsize + buf->gapsize));
+
+        // copy the data if we received a new pointer
+        if (buf->buffer != newbuf)
+            memcpy(newbuf, buf->buffer, buf->bufsize);
+
+        buf->buffer = newbuf;
         buf->gapend += buf->gapsize;
         buf->bufsize += buf->gapsize;
 
