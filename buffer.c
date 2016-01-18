@@ -1,5 +1,6 @@
 #include "buffer.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 struct Buffer *buffer_new()
 {
@@ -69,4 +70,36 @@ void buffer_add_line(struct Buffer *buf, struct Line *line)
         buf->current_line = line;
         buf->cursor_y = 0;
     }
+}
+
+int buffer_read_file(struct Buffer *buf, const char *path)
+{
+    FILE *file = fopen(path, "r");
+
+    if (file == NULL)
+        return -1;
+
+    if (buf->lines->first != NULL)
+        buffer_clear(buf);
+
+    ssize_t bytes_read;
+    size_t len;
+    char *line = NULL;
+
+    while ((bytes_read = getline(&line, &len, file)) != -1) {
+        if (line[bytes_read - 1] == '\n')
+            line[bytes_read - 1] = '\0';
+        
+        buffer_add_line(buf, line_new(line));
+    }
+
+    free(line);
+    return 0;
+}
+
+void buffer_clear(struct Buffer *buf)
+{
+    buf->current_line = NULL;
+    lines_free(buf->lines);
+    buf->lines = lines_new();
 }

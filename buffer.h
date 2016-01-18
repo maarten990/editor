@@ -17,5 +17,7 @@ void buffer_backspace(struct Buffer *buf);
 void buffer_move_cursor_x(struct Buffer *buf, int offset);
 void buffer_move_cursor_y(struct Buffer *buf, int offset);
 void buffer_add_line(struct Buffer *buf, struct Line *line);
+int buffer_read_file(struct Buffer *buf, const char *path);
+void buffer_clear(struct Buffer *buf);
 
 #endif //EDITOR_BUFFER_H
