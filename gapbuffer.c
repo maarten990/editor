@@ -8,7 +8,7 @@ struct Gapbuffer *gapbuffer_new(rune *contents, int gapsize)
     int content_len = strlen(contents);
     struct Gapbuffer *buf = malloc(sizeof(struct Gapbuffer));
 
-    buf->buffer = calloc(content_len + gapsize, sizeof(rune));
+    buf->data = calloc(content_len + gapsize, sizeof(rune));
     buf->disp_buffer = NULL;
     buf->gapsize = gapsize;
     buf->gapstart = 0;
@@ -17,7 +17,7 @@ struct Gapbuffer *gapbuffer_new(rune *contents, int gapsize)
 
     // fill the buffer starting at the end of the gap
     for (int i = 0; i < content_len; ++i) {
-        (buf->buffer + buf->gapend)[i] = contents[i];
+        (buf->data + buf->gapend)[i] = contents[i];
     }
 
     return buf;
@@ -25,28 +25,28 @@ struct Gapbuffer *gapbuffer_new(rune *contents, int gapsize)
 
 void gapbuffer_free(struct Gapbuffer *buf)
 {
-    free(buf->buffer);
+    free(buf->data);
     free(buf);
 }
 
 void gapbuf_ensure_gapsize(struct Gapbuffer *buf)
 {
     if (buf->gapend == buf->gapstart) {
-        char *newbuf = realloc(buf->buffer,
+        char *newbuf = realloc(buf->data,
                                sizeof(rune) * (buf->bufsize + buf->gapsize));
 
         // copy the data if we received a new pointer
-        if (buf->buffer != newbuf)
-            memcpy(newbuf, buf->buffer, buf->bufsize);
+        if (buf->data != newbuf)
+            memcpy(newbuf, buf->data, buf->bufsize);
 
-        buf->buffer = newbuf;
+        buf->data = newbuf;
         buf->gapend += buf->gapsize;
         buf->bufsize += buf->gapsize;
 
         // iterate backwards through the buffer and shift each element right by
         // the gapsize
         for (int i = buf->bufsize - buf->gapsize; i >= buf->gapstart; --i) {
-            buf->buffer[i + buf->gapsize] = buf->buffer[i];
+            buf->data[i + buf->gapsize] = buf->data[i];
         }
     }
 }
@@ -55,7 +55,7 @@ void gapbuf_insert_char(struct Gapbuffer *buf, rune ch)
 {
     gapbuf_ensure_gapsize(buf);
 
-    buf->buffer[buf->gapstart] = ch;
+    buf->data[buf->gapstart] = ch;
     buf->gapstart += 1;
 }
 
@@ -83,7 +83,7 @@ int gapbuf_move_cursor(struct Gapbuffer *buf, int offset)
                 break;
             }
 
-            buf->buffer[buf->gapstart] = buf->buffer[buf->gapend];
+            buf->data[buf->gapstart] = buf->data[buf->gapend];
             buf->gapstart += 1;
             buf->gapend += 1;
 
@@ -97,7 +97,7 @@ int gapbuf_move_cursor(struct Gapbuffer *buf, int offset)
 
             buf->gapstart -= 1;
             buf->gapend -= 1;
-            buf->buffer[buf->gapend] = buf->buffer[buf->gapstart];
+            buf->data[buf->gapend] = buf->data[buf->gapstart];
 
             n_moved -= 1;
         }
@@ -121,7 +121,7 @@ rune *gapbuf_display(struct Gapbuffer *buf)
         if (i >= buf->gapstart && i < buf->gapend)
             continue;
         else {
-            buf->disp_buffer[out_idx] = buf->buffer[i];
+            buf->disp_buffer[out_idx] = buf->data[i];
             out_idx += 1;
         }
     }

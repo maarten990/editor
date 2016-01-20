@@ -6,7 +6,7 @@
 typedef char rune;
 
 struct Gapbuffer {
-    rune *buffer;
+    rune *data;
     rune *disp_buffer;
     int gapsize;
     int gapstart;
