@@ -45,6 +45,9 @@ void ui_loop(struct Buffer *buffer)
                     case TB_KEY_SPACE:
                         buffer_insert(buffer, ' ');
                         break;
+                    case TB_KEY_ENTER:
+                        buffer_break_at_cursor(buffer);
+                        break;
                     default:
                         if (e.ch > 0 && e.ch <= 128) {
                             tb_utf8_unicode_to_char(&ch, e.ch);
