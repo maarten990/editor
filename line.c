@@ -97,8 +97,10 @@ void lines_add_after(struct Lines *list, struct Line *before,
                      struct Line *line)
 {
     struct Line *after = before->next;
+    if (after != NULL)
+        after->previous = line;
+
     before->next = line;
-    after->previous = line;
 
     line->previous = before;
     line->next = after;
