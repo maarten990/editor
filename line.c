@@ -115,3 +115,17 @@ void lines_remove(struct Lines *list, struct Line *line)
     line_free(line);
 }
 
+struct Line *lines_nth(struct Lines *list, int n)
+{
+    struct Line *elem = list->first;
+
+    while (elem != NULL) {
+        if (n == 0)
+            return elem;
+
+        n -= 1;
+        elem = elem->next;
+    }
+
+    return NULL;
+}
