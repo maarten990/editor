@@ -2,7 +2,6 @@
 #include <termbox.h>
 #include <string.h>
 #include "tui.h"
-#include "line.h"
 
 int ui_init()
 {
