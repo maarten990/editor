@@ -85,6 +85,7 @@ void lines_add(struct Lines *list, struct Line *line)
     if (list->last == NULL) {
         list->first = line;
         list->last = line;
+        return;
     }
 
     struct Line *previous_last = list->last;
