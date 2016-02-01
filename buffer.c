@@ -19,10 +19,9 @@ void buffer_insert(struct Buffer *buf, rune ch)
     buf->cursor_x += 1;
 }
 
-void buffer_backspace(struct Buffer *buf)
+void buffer_delete_backwards(struct Buffer *buf, int n)
 {
-    line_backspace(buf->current_line);
-    buf->cursor_x -= 1;
+    buf->cursor_x -= line_delete_backwards(buf->current_line, n);
 }
 
 void buffer_move_cursor_x(struct Buffer *buf, int offset)
@@ -116,12 +115,11 @@ void buffer_break_at_cursor(struct Buffer *buf)
 
     // move cursor to the end of the buffer and backspace until the cutoff point
     line_move_cursor_abs(buf->current_line, buf->current_line->gapbuf->bufsize);
-    gapbuf_delete_backwards(buf->current_line->gapbuf,
+    buffer_delete_backwards(buf,
                             buf->current_line->cursor - buf->cursor_x);
 
     lines_add_after(buf->lines, buf->current_line, line_new(newline_text));
 
-    buf->current_line = buf->current_line->next;
-    buf->cursor_x = buf->current_line->cursor;
-    buf->cursor_y += 1;
+    buf->cursor_x = 0;
+    buffer_move_cursor_y(buf, 1);
 }

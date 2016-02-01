@@ -41,9 +41,9 @@ rune *line_display(struct Line *line)
     return line->gapbuf->disp_buffer;
 }
 
-int line_backspace(struct Line *line)
+int line_delete_backwards(struct Line *line, int n)
 {
-    int deleted = gapbuf_delete_backwards(line->gapbuf, 1);
+    int deleted = gapbuf_delete_backwards(line->gapbuf, n);
     line->cursor -= deleted;
 
     return deleted;

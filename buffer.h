@@ -13,7 +13,7 @@ struct Buffer {
 struct Buffer *buffer_new();
 void buffer_free(struct Buffer *buf);
 void buffer_insert(struct Buffer *buf, rune ch);
-void buffer_backspace(struct Buffer *buf);
+void buffer_delete_backwards(struct Buffer *buf, int n);
 void buffer_move_cursor_x(struct Buffer *buf, int offset);
 void buffer_move_cursor_y(struct Buffer *buf, int offset);
 void buffer_add_line(struct Buffer *buf, struct Line *line);

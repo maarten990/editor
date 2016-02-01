@@ -39,7 +39,7 @@ void ui_loop(struct Buffer *buffer)
                         break;
                     case TB_KEY_BACKSPACE:
                     case TB_KEY_BACKSPACE2:
-                        buffer_backspace(buffer);
+                        buffer_delete_backwards(buffer, 1);
                         break;
                     case TB_KEY_SPACE:
                         buffer_insert(buffer, ' ');
