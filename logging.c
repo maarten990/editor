@@ -9,6 +9,7 @@ void log_str(const char *msg, ...)
     va_start(args, msg);
 
     vfprintf(logfile, msg, args);
+    fflush(logfile);
 
     va_end(args);
 }
