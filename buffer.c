@@ -168,7 +168,7 @@ void buffer_break_at_cursor(struct Buffer *buf)
     strncpy(newline_text, current_text + buf->cursor_x, sizeof(newline_text));
 
     // ensure null termination
-    newline_text[sizeof(newline_text) - 1] = '\0';
+    newline_text[sizeof(newline_text)] = '\0';
 
     // move cursor to the end of the buffer and backspace until the cutoff point
     line_move_cursor_abs(buf->current_line, buf->current_line->gapbuf->bufsize);
