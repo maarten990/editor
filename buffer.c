@@ -213,6 +213,6 @@ int buffer_write_to_file(struct Buffer *buf, const char *path)
     if (rename(temp_path, path) < 0)
         return errno;
 
-    buf->view.status_message = "Filed saved";
+    buf->view.status_message = "File saved";
     return 0;
 }
