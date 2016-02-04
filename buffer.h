@@ -8,6 +8,12 @@ struct Buffer {
     struct Line *current_line;
     int cursor_x;
     int cursor_y;
+
+    struct View {
+        int width;
+        int height;
+        int start;
+    } view;
 };
 
 struct Buffer *buffer_new();

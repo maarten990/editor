@@ -10,6 +10,14 @@ struct Buffer *buffer_new()
     buffer->cursor_x = 0;
     buffer->cursor_y = 0;
 
+    struct View view = {
+        .width = -1,
+        .height = -1,
+        .start = 0,
+    };
+
+    buffer->view = view;
+
     return buffer;
 }
 
@@ -54,6 +62,7 @@ void buffer_move_cursor_x(struct Buffer *buf, int offset)
 
 void buffer_move_cursor_y(struct Buffer *buf, int offset)
 {
+    // moving downwards
     if (offset > 0) {
         for (int i = 0; i < offset; ++i) {
             if (buf->current_line->next == NULL)
@@ -62,7 +71,10 @@ void buffer_move_cursor_y(struct Buffer *buf, int offset)
             buf->current_line = buf->current_line->next;
             buf->cursor_y += 1;
         }
-    } else {
+    }
+    
+    // moving upwards
+    else {
         for (int i = 0; i > offset; --i) {
             if (buf->current_line->previous == NULL)
                 break;
@@ -76,6 +88,17 @@ void buffer_move_cursor_y(struct Buffer *buf, int offset)
     // it's in range of the line
     line_move_cursor_abs(buf->current_line, buf->cursor_x);
     buf->cursor_x = buf->current_line->cursor;
+
+    // adjust the view if necessary
+    if (offset > 0) {
+        int too_far = (buf->cursor_y - buf->view.start) - buf->view.height;
+        if (too_far >= 0)
+            buf->view.start += too_far + 1;
+    } else {
+        int offset = (buf->cursor_y - buf->view.start);
+        if (offset < 0)
+            buf->view.start += offset;
+    }
 }
 
 void buffer_free(struct Buffer *buf)

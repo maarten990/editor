@@ -3,14 +3,33 @@
 #include <string.h>
 #include "tui.h"
 
-int ui_init()
+#define COLOR_BACKGROUND 18
+#define COLOR_FOREGROUND 15
+
+int max(int x, int y) {
+    return x < y ? y : x;
+}
+
+int min(int x, int y) {
+    return x < y ? x : y;
+}
+
+int ui_init(st)
 {
     setlocale(LC_ALL, "");
     return tb_init();
 }
 
+void set_view(struct Buffer *buffer)
+{
+    buffer->view.width = tb_width();
+    buffer->view.height = tb_height();
+    buffer->view.start = 0;
+}
+
 void ui_loop(struct Buffer *buffer)
 {
+    set_view(buffer);
     ui_draw(buffer);
 
     while (1) {
@@ -21,64 +40,67 @@ void ui_loop(struct Buffer *buffer)
 
         char ch;
         switch (e.type) {
-            case TB_EVENT_KEY:
-                switch(e.key) {
-                    case TB_KEY_ESC:
-                        return;
-                    case TB_KEY_ARROW_LEFT:
-                        buffer_move_cursor_x(buffer, -1);
-                        break;
-                    case TB_KEY_ARROW_RIGHT:
-                        buffer_move_cursor_x(buffer, 1);
-                        break;
-                    case TB_KEY_ARROW_UP:
-                        buffer_move_cursor_y(buffer, -1);
-                        break;
-                    case TB_KEY_ARROW_DOWN:
-                        buffer_move_cursor_y(buffer, 1);
-                        break;
-                    case TB_KEY_BACKSPACE:
-                    case TB_KEY_BACKSPACE2:
-                        buffer_delete_backwards(buffer, 1);
-                        break;
-                    case TB_KEY_SPACE:
-                        buffer_insert(buffer, ' ');
-                        break;
-                    case TB_KEY_ENTER:
-                        buffer_break_at_cursor(buffer);
-                        break;
-                    default:
-                        if (e.ch > 0 && e.ch <= 128) {
-                            tb_utf8_unicode_to_char(&ch, e.ch);
-                            buffer_insert(buffer, ch);
-                        }
-                        break;
-                }
+        case TB_EVENT_KEY:
+            switch(e.key) {
+            case TB_KEY_ESC:
+                return;
+            case TB_KEY_ARROW_LEFT:
+                buffer_move_cursor_x(buffer, -1);
                 break;
-            case TB_EVENT_RESIZE:
+            case TB_KEY_ARROW_RIGHT:
+                buffer_move_cursor_x(buffer, 1);
+                break;
+            case TB_KEY_ARROW_UP:
+                buffer_move_cursor_y(buffer, -1);
+                break;
+            case TB_KEY_ARROW_DOWN:
+                buffer_move_cursor_y(buffer, 1);
+                break;
+            case TB_KEY_BACKSPACE:
+            case TB_KEY_BACKSPACE2:
+                buffer_delete_backwards(buffer, 1);
+                break;
+            case TB_KEY_SPACE:
+                buffer_insert(buffer, ' ');
+                break;
+            case TB_KEY_ENTER:
+                buffer_break_at_cursor(buffer);
                 break;
             default:
+                if (e.ch > 0 && e.ch <= 128) {
+                    tb_utf8_unicode_to_char(&ch, e.ch);
+                    buffer_insert(buffer, ch);
+                }
                 break;
+            }
+            break;
+        case TB_EVENT_RESIZE:
+            buffer->view.width = tb_width();
+            buffer->view.height = tb_height();
+            break;
+        default:
+            break;
         }
     }
 }
 
 void ui_draw(struct Buffer *buffer)
 {
-    tb_clear();
     tb_select_output_mode(TB_OUTPUT_256);
+    tb_set_clear_attributes(COLOR_FOREGROUND, COLOR_BACKGROUND);
+    tb_clear();
 
+    struct Line *line = lines_nth(buffer->lines, buffer->view.start);
     int row = 0;
-    struct Line *line = buffer->lines->first;
 
     do {
         rune *disp = line_display(line);
 
-        for (int col = 0; col < strlen(disp); ++col) {
-            tb_change_cell(col, row, disp[col], TB_DEFAULT, TB_DEFAULT);
+        for (int col = 0; col < min(strlen(disp), buffer->view.width); ++col) {
+            tb_change_cell(col, row, disp[col], COLOR_FOREGROUND, COLOR_BACKGROUND);
         }
 
-        if (row == buffer->cursor_y) {
+        if (buffer->view.start + row == buffer->cursor_y) {
             tb_set_cursor(line->cursor, row);
         }
     } while ((line = line->next) != NULL && ++row);

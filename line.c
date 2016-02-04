@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <MacTypes.h>
 #include "line.h"
 
 struct Line *line_new(rune *contents)
