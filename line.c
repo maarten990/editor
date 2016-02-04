@@ -109,8 +109,11 @@ void lines_add_after(struct Lines *list, struct Line *before,
 
 void lines_remove(struct Lines *list, struct Line *line)
 {
-    line->previous = line->next;
-    line->next = line->previous;
+    if (line->previous)
+        line->previous->next = line->next;
+
+    if (line->next)
+        line->next->previous = line->previous;
 
     line_free(line);
 }
