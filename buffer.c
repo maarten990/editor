@@ -1,6 +1,8 @@
-#include "buffer.h"
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+#include "buffer.h"
+#include "util.h"
 
 struct Buffer *buffer_new()
 {
@@ -9,6 +11,7 @@ struct Buffer *buffer_new()
     buffer->current_line = buffer->lines->first;
     buffer->cursor_x = 0;
     buffer->cursor_y = 0;
+    buffer->filename = NULL;
 
     struct View view = {
         .width = -1,
@@ -139,6 +142,13 @@ int buffer_read_file(struct Buffer *buf, const char *path)
     }
 
     free(line);
+
+    // set the filename
+    if (buf->filename)
+        free(buf->filename);
+    buf->filename = malloc(sizeof(char) * strlen(path) + 1);
+    sprintf(buf->filename, "%s", path);
+
     return 0;
 }
 
@@ -168,4 +178,34 @@ void buffer_break_at_cursor(struct Buffer *buf)
 
     buf->cursor_x = 0;
     buffer_move_cursor_y(buf, 1);
+}
+
+int buffer_write_to_file(struct Buffer *buf, const char *path)
+{
+    // write the buffer to a temporary file which replaces the original file if
+    // there were no errors
+    char temp_path[strlen(path) + 5]; // +4 for the prefix, +1 for \0
+    sprintf(temp_path, ".%s.tmp", path);
+    FILE *file = fopen(temp_path, "w");
+
+    if (file == NULL)
+        return -1;
+
+    struct Line *line = buf->lines->first;
+    char *disp;
+
+    do {
+        disp = line_display(line);
+        fprintf(file, "%s\n", disp);
+    } while ((line = line->next) != NULL);
+
+    // backup the original file and move the tempfile in its place
+    char backup[strlen(path) + 2]; // +1 for the suffix, +1 for \0
+    sprintf(backup, "%s~", path);
+    if (copy_file(path, backup) < 0)
+        return -1;
+    if (rename(temp_path, path) < 0)
+        return errno;
+
+    return 0;
 }

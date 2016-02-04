@@ -14,7 +14,9 @@ set(SOURCE_FILES
     buffer.c
     buffer.h
     logging.h
-    logging.c)
+    logging.c
+    util.h
+    util.c)
 
 add_executable(Editor ${SOURCE_FILES})
 target_link_libraries(Editor -ltermbox)

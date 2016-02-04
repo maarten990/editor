@@ -8,6 +8,7 @@ struct Buffer {
     struct Line *current_line;
     int cursor_x;
     int cursor_y;
+    char *filename;
 
     struct View {
         int width;
@@ -47,6 +48,7 @@ void buffer_clear(struct Buffer *buf);
 void buffer_break_at_cursor(struct Buffer *buf);
 
 // write the buffer's contents to a file
-void buffer_write_to_file(struct Buffer *buf, const char *path);
+// return -1 on error, 0 if writing succeeded
+int buffer_write_to_file(struct Buffer *buf, const char *path);
 
 #endif //EDITOR_BUFFER_H
