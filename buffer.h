@@ -14,6 +14,7 @@ struct Buffer {
         int width;
         int height;
         int start;
+        char *status_message;
     } view;
 };
 

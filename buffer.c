@@ -17,6 +17,7 @@ struct Buffer *buffer_new()
         .width = -1,
         .height = -1,
         .start = 0,
+        .status_message = NULL,
     };
 
     buffer->view = view;
@@ -182,6 +183,7 @@ void buffer_break_at_cursor(struct Buffer *buf)
 
 int buffer_write_to_file(struct Buffer *buf, const char *path)
 {
+    buf->view.status_message = "Saving...";
     // write the buffer to a temporary file which replaces the original file if
     // there were no errors
     char temp_path[strlen(path) + 5]; // +4 for the prefix, +1 for \0
@@ -201,6 +203,8 @@ int buffer_write_to_file(struct Buffer *buf, const char *path)
         fprintf(file, "%s\n", disp);
     } while ((line = line->next) != NULL);
 
+    fclose(file);
+
     // backup the original file and move the tempfile in its place
     char backup[strlen(path) + 2]; // +1 for the suffix, +1 for \0
     sprintf(backup, "%s~", path);
@@ -209,5 +213,6 @@ int buffer_write_to_file(struct Buffer *buf, const char *path)
     if (rename(temp_path, path) < 0)
         return errno;
 
+    buf->view.status_message = "Filed saved";
     return 0;
 }

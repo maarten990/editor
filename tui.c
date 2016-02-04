@@ -1,6 +1,6 @@
-#include <locale.h>
-#include <termbox.h>
 #include <string.h>
+#include <stdio.h>
+#include <termbox.h>
 #include "tui.h"
 
 #define COLOR_BACKGROUND 18
@@ -16,15 +16,15 @@ int min(int x, int y) {
 
 int ui_init(st)
 {
-    setlocale(LC_ALL, "");
     return tb_init();
 }
 
 void set_view(struct Buffer *buffer)
 {
     buffer->view.width = tb_width();
-    buffer->view.height = tb_height();
+    buffer->view.height = tb_height() - 1;
     buffer->view.start = 0;
+    buffer->view.status_message = "";
 }
 
 void ui_loop(struct Buffer *buffer)
@@ -79,11 +79,26 @@ void ui_loop(struct Buffer *buffer)
             break;
         case TB_EVENT_RESIZE:
             buffer->view.width = tb_width();
-            buffer->view.height = tb_height();
+            buffer->view.height = tb_height() - 1;
             break;
         default:
             break;
         }
+    }
+}
+
+void draw_statusbar(struct Buffer *buffer)
+{
+    char text[tb_width()];
+    sprintf(text, "File: %s    %s", buffer->filename,
+            buffer->view.status_message);
+
+    int row = buffer->view.height;
+    int size = strlen(text);
+    char ch;
+    for (int i = 0; i < sizeof(text); ++i) {
+        ch = i < size ? text[i] : ' ';
+        tb_change_cell(i, row, ch, COLOR_BACKGROUND, 226);
     }
 }
 
@@ -108,6 +123,7 @@ void ui_draw(struct Buffer *buffer)
         }
     } while ((line = line->next) != NULL && ++row);
 
+    draw_statusbar(buffer);
     tb_present();
 }
 
