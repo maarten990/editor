@@ -21,7 +21,30 @@ void buffer_insert(struct Buffer *buf, rune ch)
 
 void buffer_delete_backwards(struct Buffer *buf, int n)
 {
-    buf->cursor_x -= line_delete_backwards(buf->current_line, n);
+    int deleted = line_delete_backwards(buf->current_line, n);
+    buf->cursor_x -= deleted;
+
+    int diff = n - deleted;
+
+    // join with the previous line if we're deleting past the start of the line
+    if (diff != 0 && buf->current_line->previous != NULL) {
+        rune *text = line_display(buf->current_line);
+        int size = strlen(text);
+        buffer_move_cursor_y(buf, -1);
+        buffer_move_cursor_x(buf, buf->current_line->gapbuf->bufsize);
+
+        // insert a space if the text is being appended after existing text
+        if (buf->cursor_x > 0 && size > 0)
+            buffer_insert(buf, ' ');
+
+        for (int i = 0; i < size; ++i)
+            buffer_insert(buf, text[i]);
+
+        // move the cursor back to the right place
+        buffer_move_cursor_x(buf, -size);
+
+        lines_remove(buf->lines, buf->current_line->next);
+    }
 }
 
 void buffer_move_cursor_x(struct Buffer *buf, int offset)

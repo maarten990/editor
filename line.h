@@ -27,7 +27,7 @@ int line_move_cursor(struct Line *line, int offset);
 void line_insert_char(struct Line *line, rune ch);
 
 // delete 1 character backwards from the cursor
-int line_backspace(struct Line *line);
+int line_delete_backwards(struct Line *line, int n);
 
 // return a string container a representation of the line
 rune *line_display(struct Line *line);
