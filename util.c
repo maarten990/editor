@@ -9,7 +9,6 @@ int copy_file(const char *from, const char *to)
     int dest = -1;
     struct stat info;
     int error;
-    int saved_errno;
 
     src = open(from, O_RDONLY);
     error = fstat(src, &info);

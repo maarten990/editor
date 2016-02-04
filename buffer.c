@@ -188,8 +188,10 @@ int buffer_write_to_file(struct Buffer *buf, const char *path)
     sprintf(temp_path, ".%s.tmp", path);
     FILE *file = fopen(temp_path, "w");
 
-    if (file == NULL)
+    if (file == NULL) {
+        fclose(file);
         return -1;
+    }
 
     struct Line *line = buf->lines->first;
     char *disp;
