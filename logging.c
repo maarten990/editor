@@ -1,5 +1,7 @@
 #include "logging.h"
 
+FILE *logfile;
+
 void log_str(const char *msg, ...)
 {
     if (logfile == NULL)
