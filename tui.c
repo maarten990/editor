@@ -74,9 +74,7 @@ void ui_loop(struct Buffer *buffer)
                 buffer_write_to_file(buffer, buffer->filename);
                 break;
             case TB_KEY_CTRL_K:
-                python_exec("import editor\n"
-                            "buffer = editor.current_buffer()\n"
-                            "buffer.insert('hello ')\n");
+                python_exec("current_buffer().insert('hello ')\n");
                 break;
             default:
                 if (e.ch > 0 && e.ch <= 128) {

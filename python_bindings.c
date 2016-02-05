@@ -23,11 +23,12 @@ void python_init()
 {
     PyImport_AppendInittab("editor", &PyInit_editor);
     Py_Initialize();
+    python_exec("from editor import *\n");
 }
 
 void python_destroy()
 {
-    //Py_Finalize();
+    Py_Finalize();
 }
 
 void python_exec(const char *str)
