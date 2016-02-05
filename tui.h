@@ -3,6 +3,8 @@
 
 #include "buffer.h"
 
+extern struct Buffer *active_buffer;
+
 // initialize the UI
 int ui_init();
 

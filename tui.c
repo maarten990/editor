@@ -2,9 +2,12 @@
 #include <stdio.h>
 #include <termbox.h>
 #include "tui.h"
+#include "python_bindings.h"
 
 #define COLOR_BACKGROUND 18
 #define COLOR_FOREGROUND 15
+
+struct Buffer *active_buffer = NULL;
 
 int max(int x, int y) {
     return x < y ? y : x;
@@ -14,7 +17,7 @@ int min(int x, int y) {
     return x < y ? x : y;
 }
 
-int ui_init(st)
+int ui_init()
 {
     return tb_init();
 }
@@ -31,6 +34,7 @@ void ui_loop(struct Buffer *buffer)
 {
     set_view(buffer);
     ui_draw(buffer);
+    active_buffer = buffer;
 
     while (1) {
         ui_draw(buffer);
@@ -69,6 +73,11 @@ void ui_loop(struct Buffer *buffer)
             case TB_KEY_CTRL_S:
                 buffer_write_to_file(buffer, buffer->filename);
                 break;
+            case TB_KEY_CTRL_K:
+                python_exec("import editor\n"
+                            "buffer = editor.current_buffer()\n"
+                            "buffer.insert('hello ')\n");
+                break;
             default:
                 if (e.ch > 0 && e.ch <= 128) {
                     tb_utf8_unicode_to_char(&ch, e.ch);
@@ -89,14 +98,16 @@ void ui_loop(struct Buffer *buffer)
 
 void draw_statusbar(struct Buffer *buffer)
 {
-    char text[tb_width()];
+    int width = tb_width();
+
+    char text[width];
     sprintf(text, "File: %s    %s", buffer->filename,
             buffer->view.status_message);
 
     int row = buffer->view.height;
     int size = strlen(text);
     char ch;
-    for (int i = 0; i < sizeof(text); ++i) {
+    for (int i = 0; i < width; ++i) {
         ch = i < size ? text[i] : ' ';
         tb_change_cell(i, row, ch, COLOR_BACKGROUND, 226);
     }

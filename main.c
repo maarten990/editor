@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "line.h"
 #include "tui.h"
+#include "python_bindings.h"
 
 int main(int argc, char *argv[])
 {
@@ -27,8 +28,11 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    python_init();
+
     ui_loop(buffer);
 
+    python_destroy();
     ui_destroy();
     return 0;
 }
