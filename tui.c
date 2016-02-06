@@ -68,13 +68,13 @@ void ui_loop(struct Buffer *buffer)
                 buffer_insert(buffer, ' ');
                 break;
             case TB_KEY_ENTER:
-                buffer_break_at_cursor(buffer);
+                python_exec("newline_and_indent()\n");
                 break;
             case TB_KEY_CTRL_S:
                 buffer_write_to_file(buffer, buffer->filename);
                 break;
             case TB_KEY_CTRL_K:
-                python_exec("current_buffer().insert('hello ')\n");
+                python_exec("current_buffer().insert(str(current_buffer().cursor()))\n");
                 break;
             default:
                 if (e.ch > 0 && e.ch <= 128) {

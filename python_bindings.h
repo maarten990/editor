@@ -5,6 +5,7 @@
 #include <structmember.h>
 #include <string.h>
 #include "buffer.h"
+#include "logging.h"
 
 extern struct Buffer *active_buffer;
 
@@ -28,16 +29,47 @@ static PyObject *PyBuffer_insert(PyBuffer *self, PyObject *args)
 
     n = strlen(str);
 
-    for (int i = 0; i < n; ++i)
-        buffer_insert(self->buffer, str[i]);
+    for (int i = 0; i < n; ++i) {
+        if (str[i] == '\n')
+            buffer_break_at_cursor(self->buffer);
+        else
+            buffer_insert(self->buffer, str[i]);
+    }
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
+static PyObject *PyBuffer_cursor(PyBuffer *self)
+{
+    PyObject *out = PyTuple_New(2);
+    PyTuple_SetItem(out, 0, Py_BuildValue("i", self->buffer->cursor_x));
+    PyTuple_SetItem(out, 1, Py_BuildValue("i", self->buffer->cursor_y));
+
+    return out;
+}
+
+static PyObject *PyBuffer_get_line(PyBuffer *self, PyObject *args)
+{
+    int y;
+
+    if (!PyArg_ParseTuple(args, "i:insert", &y)) {
+        return NULL;
+    }
+
+    char *display = line_display(lines_nth(self->buffer->lines, y));
+    return Py_BuildValue("s", display);
+}
+
 static PyMethodDef PyBuffer_methods[] = {
     {"insert", (PyCFunction)PyBuffer_insert, METH_VARARGS,
      "Insert the given string to the buffer at the cursor location."
+    },
+    {"cursor", (PyCFunction)PyBuffer_cursor, METH_NOARGS,
+     "Return the x and y coordinates of the cursor."
+    },
+    {"get_line", (PyCFunction)PyBuffer_get_line, METH_VARARGS,
+     "Get the contents of a given line."
     },
     {NULL}  /* Sentinel */
 };
