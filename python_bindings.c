@@ -1,6 +1,8 @@
 #include <Python.h>
+#include <stdio.h>
 #include "python_bindings.h"
 #include "logging.h"
+#include "tinydir.h"
 
 PyObject *locals;
 
@@ -30,18 +32,8 @@ void python_init()
     PyObject *mod = PyImport_AddModule("__main__");
     locals = PyModule_GetDict(mod);
 
-    //PyDict_SetItemString(globals, "__builtins__", PyEval_GetBuiltins());
-    //PyDict_SetItemString(locals, "__builtins__", PyEval_GetBuiltins());
-
     python_exec("from editor import *\n");
-    python_exec("import re\n");
-    python_exec("def newline_and_indent():\n"
-                "    buffer = current_buffer()\n"
-                "    x, y = buffer.cursor()\n"
-                "    match = re.search(r'\\w', buffer.get_line(y))\n"
-                "    n_spaces = match.start() if match else 0\n"
-                "    buffer.insert('\\n' + (' ' * n_spaces))\n"
-                "\n");
+    python_load_plugins();
 }
 
 void python_destroy()
@@ -55,6 +47,30 @@ void python_exec(const char *str)
 
     if (out == NULL)
         PyErr_Print();
-    else {
+}
+
+void python_load_plugins()
+{
+    tinydir_dir dir;
+    tinydir_open(&dir, "./plugins/");
+
+    while (dir.has_next) {
+        tinydir_file file;
+        tinydir_readfile(&dir, &file);
+        log_str("Loading %s\n", file.path);
+
+        if (!file.is_dir) {
+            PyObject *obj = Py_BuildValue("s", file.path);
+            FILE *f = _Py_fopen_obj(obj, "r+");
+            if (f != NULL) {
+                PyRun_SimpleFile(f, file.name);
+            } else {
+                log_str("Error: could not open path %s\n", file.path);
+            }
+        }
+
+        tinydir_next(&dir);
     }
+
+    tinydir_close(&dir);
 }
