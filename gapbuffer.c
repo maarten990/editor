@@ -20,6 +20,9 @@ struct Gapbuffer *gapbuffer_new(rune *contents, int gapsize)
         (buf->data + buf->gapend)[i] = contents[i];
     }
 
+    buf->disp_buffer = realloc(buf->disp_buffer,
+                               sizeof(rune) * buf->bufsize);
+
     return buf;
 }
 
@@ -48,6 +51,10 @@ void gapbuf_ensure_gapsize(struct Gapbuffer *buf)
         for (int i = buf->bufsize - buf->gapsize; i >= buf->gapstart; --i) {
             buf->data[i + buf->gapsize] = buf->data[i];
         }
+
+        // reallocate the display buffer
+        buf->disp_buffer = realloc(buf->disp_buffer,
+                                   sizeof(rune) * buf->bufsize);
     }
 }
 
@@ -108,14 +115,6 @@ int gapbuf_move_cursor(struct Gapbuffer *buf, int offset)
 
 rune *gapbuf_display(struct Gapbuffer *buf)
 {
-    rune *new_disp = realloc(buf->disp_buffer,
-                             sizeof(rune) * (buf->bufsize - buf->gapsize + 1));
-
-    if (new_disp == NULL)
-        printf("Error allocating display buffer");
-    else
-        buf->disp_buffer = new_disp;
-
     int out_idx = 0;
     for (int i = 0; i < buf->bufsize; i++) {
         if (i >= buf->gapstart && i < buf->gapend)
