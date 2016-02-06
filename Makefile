@@ -1,4 +1,4 @@
-CFLAGS = -Wall -pedantic -O2 -std=c99
+CFLAGS = -Wall -pedantic -g -std=c99
 LDFLAGS = -ltermbox
 
 # Python

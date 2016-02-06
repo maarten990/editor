@@ -34,7 +34,6 @@ void python_init()
     //PyDict_SetItemString(locals, "__builtins__", PyEval_GetBuiltins());
 
     python_exec("from editor import *\n");
-    python_exec("TESTING = 5\n");
     python_exec("import re\n");
     python_exec("def newline_and_indent():\n"
                 "    buffer = current_buffer()\n"
