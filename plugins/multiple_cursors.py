@@ -1,34 +1,35 @@
-import editor
+from editor import current_buffer
 
-def toggle_multi_cursor_cursor():
-    buf = editor.current_buffer
+current_buffer.cursors = []
 
-    if not hasattr(buf, 'second_cursor'):
-        x, y = buf.cursor
-        buf.second_cursor = (x, y)
-    else:
-        delattr(f, 'second_cursor')
+def add_multi_cursor():
+    current_buffer.cursors.append(current_buffer.cursor)
+
+
+def reset_multi_cursor():
+    current_buffer.cursors = []
 
 
 def multi_cursor_insert(s):
-    buf = editor.current_buffer
+    current_buffer.insert(s)
 
-    if hasattr(buf, 'second_cursor'):
-        x, y = buf.second_cursor
-        with cursor_at(buf, x, y):
-            buf.insert(s)
-            buf.second_cursor = (x + 1, y)
+    for i, cursor in enumerate(current_buffer.cursors):
+        x, y = cursor
 
-    buf.insert(s)
+        with cursor_at(current_buffer, x, y):
+            current_buffer.insert(s)
+            current_buffer.cursors[i] = (x + 1, y)
 
 
 def multi_cursor_backspace():
+    current_buffer.delete_backwards(1)
+
     buf = editor.current_buffer
 
-    if hasattr(buf, 'second_cursor'):
-        x, y = buf.second_cursor
-        with cursor_at(buf, x, y):
-            buf.delete_backwards(1)
-            buf.second_cursor = (x - 1 if x > 0 else x, y)
+    for i, cursor in enumerate(current_buffer.cursors):
+        x, y = cursor
 
-    buf.delete_backwards(1)
+        with cursor_at(current_buffer, x, y):
+            current_buffer.insert(s)
+            buf.delete_backwards(1)
+            current_buffer.cursors[i] = (x - 1 if x > 0 else x, y)

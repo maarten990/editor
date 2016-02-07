@@ -79,7 +79,10 @@ void ui_loop()
                 buffer_write_to_file(buffer, buffer->filename);
                 break;
             case TB_KEY_CTRL_R:
-                python_exec("toggle_multi_cursor_cursor()\n");
+                python_exec("add_multi_cursor()\n");
+                break;
+            case TB_KEY_CTRL_W:
+                python_exec("reset_multi_cursor()\n");
                 break;
             case TB_KEY_CTRL_K:
                 python_exec("kill_line()\n");
