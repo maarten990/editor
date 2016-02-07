@@ -1,5 +1,6 @@
 import re
 
+
 class cursor_at:
     def __init__(self, buf, x, y):
         self.buf = buf

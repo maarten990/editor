@@ -62,10 +62,12 @@ void ui_loop(struct Buffer *buffer)
                 break;
             case TB_KEY_BACKSPACE:
             case TB_KEY_BACKSPACE2:
-                buffer_delete_backwards(buffer, 1);
+                //buffer_delete_backwards(buffer, 1);
+                python_exec("multi_cursor_backspace()\n");
                 break;
             case TB_KEY_SPACE:
-                buffer_insert(buffer, ' ');
+                //buffer_insert(buffer, ' ');
+                python_exec("multi_cursor_insert(' ')\n");
                 break;
             case TB_KEY_ENTER:
                 python_exec("newline_and_indent()\n");
@@ -73,13 +75,22 @@ void ui_loop(struct Buffer *buffer)
             case TB_KEY_CTRL_S:
                 buffer_write_to_file(buffer, buffer->filename);
                 break;
+            case TB_KEY_CTRL_R:
+                python_exec("toggle_multi_cursor_cursor()\n");
+                break;
             case TB_KEY_CTRL_K:
-                python_exec("current_buffer().insert(str(current_buffer().cursor()))\n");
+                python_exec("kill_line()\n");
+                break;
+            case TB_KEY_CTRL_L:
+                python_exec("current_buffer().insert(str(dir()))\n");
                 break;
             default:
                 if (e.ch > 0 && e.ch <= 128) {
                     tb_utf8_unicode_to_char(&ch, e.ch);
-                    buffer_insert(buffer, ch);
+                    //buffer_insert(buffer, ch);
+                    char cmd[128];
+                    sprintf(cmd, "multi_cursor_insert(\"%c\")", ch);
+                    python_exec(cmd);
                 }
                 break;
             }
