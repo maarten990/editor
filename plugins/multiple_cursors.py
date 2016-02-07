@@ -24,12 +24,11 @@ def multi_cursor_insert(s):
 def multi_cursor_backspace():
     current_buffer.delete_backwards(1)
 
-    buf = editor.current_buffer
+    buf = current_buffer
 
     for i, cursor in enumerate(current_buffer.cursors):
         x, y = cursor
 
         with cursor_at(current_buffer, x, y):
-            current_buffer.insert(s)
-            buf.delete_backwards(1)
+            current_buffer.delete_backwards(1)
             current_buffer.cursors[i] = (x - 1 if x > 0 else x, y)
