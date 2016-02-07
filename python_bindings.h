@@ -12,9 +12,46 @@ extern struct Buffer *active_buffer;
 typedef struct {
     PyObject_HEAD
     struct Buffer *buffer;
+    PyObject *cursor;
 } PyBuffer;
 
 static PyMemberDef PyBuffer_members[] = {
+    {NULL}  /* Sentinel */
+};
+
+static PyObject *PyBuffer_getcursor(PyBuffer *self, void *closure)
+{
+    PyObject *cursor = Py_BuildValue("(ii)", self->buffer->cursor_x,
+                                     self->buffer->cursor_y);
+
+    return cursor;
+}
+
+static int PyBuffer_setcursor(PyBuffer *self, PyObject *value, void *closure)
+{
+    if (value == NULL) {
+        PyErr_SetString(PyExc_TypeError, "Cannot delete the cursor attribute");
+        return -1;
+    }
+
+    int x, y;
+    if (!PyArg_ParseTuple(value, "ii:setcursor", &x, &y)) {
+        PyErr_SetString(PyExc_TypeError,
+                        "Cursor must be a tuple of 2 elements.");
+        return -1;
+    }
+
+    buffer_move_cursor_y(self->buffer, y - self->buffer->cursor_y);
+    buffer_move_cursor_x(self->buffer, x - self->buffer->cursor_x);
+
+    return 0;
+}
+
+static PyGetSetDef PyBuffer_getseters[] = {
+    {"cursor",
+     (getter)PyBuffer_getcursor, (setter)PyBuffer_setcursor,
+     "the cursor",
+     NULL},
     {NULL}  /* Sentinel */
 };
 
@@ -40,13 +77,18 @@ static PyObject *PyBuffer_insert(PyBuffer *self, PyObject *args)
     return Py_None;
 }
 
-static PyObject *PyBuffer_cursor(PyBuffer *self)
+static PyObject *PyBuffer_delete_backwards(PyBuffer *self, PyObject *args)
 {
-    PyObject *out = PyTuple_New(2);
-    PyTuple_SetItem(out, 0, Py_BuildValue("i", self->buffer->cursor_x));
-    PyTuple_SetItem(out, 1, Py_BuildValue("i", self->buffer->cursor_y));
+    int n;
 
-    return out;
+    if (!PyArg_ParseTuple(args, "i:insert", &n)) {
+        return NULL;
+    }
+
+    buffer_delete_backwards(self->buffer, n);
+
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 static PyObject *PyBuffer_get_line(PyBuffer *self, PyObject *args)
@@ -65,8 +107,8 @@ static PyMethodDef PyBuffer_methods[] = {
     {"insert", (PyCFunction)PyBuffer_insert, METH_VARARGS,
      "Insert the given string to the buffer at the cursor location."
     },
-    {"cursor", (PyCFunction)PyBuffer_cursor, METH_NOARGS,
-     "Return the x and y coordinates of the cursor."
+    {"delete_backwards", (PyCFunction)PyBuffer_delete_backwards, METH_VARARGS,
+     "Delete n characters backwards from the cursor."
     },
     {"get_line", (PyCFunction)PyBuffer_get_line, METH_VARARGS,
      "Get the contents of a given line."
@@ -104,7 +146,7 @@ static PyTypeObject PyBufferType = {
     0,                           /* tp_iternext */
     PyBuffer_methods,            /* tp_methods */
     PyBuffer_members,            /* tp_members */
-    0,                           /* tp_getset */
+    PyBuffer_getseters,          /* tp_getset */
     0,                           /* tp_base */
     0,                           /* tp_dict */
     0,                           /* tp_descr_get */
