@@ -158,18 +158,7 @@ static PyTypeObject PyBufferType = {
     PyType_GenericNew,           /* tp_new */
 };
 
-static PyObject *editor_current_buffer(PyObject *self, PyObject *args)
-{
-    PyObject *obj = PyObject_CallObject((PyObject *) &PyBufferType, NULL);
-    PyBuffer *buf = (PyBuffer *)obj;
-    buf->buffer = active_buffer;
-
-    return obj;
-}
-
 static PyMethodDef editorMethods[] = {
-    {"current_buffer", editor_current_buffer, METH_VARARGS,
-     "Get the currently active buffer object."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

@@ -21,6 +21,12 @@ PyMODINIT_FUNC PyInit_editor()
     Py_INCREF(&PyBufferType);
     PyModule_AddObject(m, "Buffer", (PyObject *)&PyBufferType);
 
+    // add a current_buffer variable
+    PyObject *obj = PyObject_CallObject((PyObject *) &PyBufferType, NULL);
+    PyBuffer *buf = (PyBuffer *)obj;
+    buf->buffer = active_buffer;
+    PyModule_AddObject(m, "current_buffer", (PyObject *)buf);
+
     return m;
 }
 
@@ -32,7 +38,6 @@ void python_init()
     PyObject *mod = PyImport_AddModule("__main__");
     locals = PyModule_GetDict(mod);
 
-    python_exec("from editor import *\n");
     python_load_plugins();
 }
 
