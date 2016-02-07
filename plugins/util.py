@@ -1,5 +1,5 @@
+from editor import current_buffer
 import re
-
 
 class cursor_at:
     def __init__(self, buf, x, y):
@@ -16,19 +16,16 @@ class cursor_at:
 
 
 def kill_line():
-    buf = current_buffer()
+    _, y = current_buffer.cursor
+    current_buffer.cursor = (999, y)
 
-    _, y = buf.cursor
-    buf.cursor = (999, y)
-
-    x, _ = buf.cursor
-    buf.delete_backwards(x)
+    x, _ = current_buffer.cursor
+    current_buffer.delete_backwards(x)
 
 
 def newline_and_indent():
-    buf = current_buffer()
-    x, y = buf.cursor
+    x, y = current_buffer.cursor
 
-    match = re.search(r'\w', buf.get_line(y))
+    match = re.search(r'\w', current_buffer.get_line(y))
     n_spaces = match.start() if match else 0
-    buf.insert('\n' + (' ' * n_spaces))
+    current_buffer.insert('\n' + (' ' * n_spaces))

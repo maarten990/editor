@@ -1,11 +1,7 @@
-buf = None
-
+import editor
 
 def toggle_multi_cursor_cursor():
-    global buf
-
-    if not buf:
-        buf = current_buffer()
+    buf = editor.current_buffer
 
     if not hasattr(buf, 'second_cursor'):
         x, y = buf.cursor
@@ -13,20 +9,9 @@ def toggle_multi_cursor_cursor():
     else:
         delattr(f, 'second_cursor')
 
-    with open('python_log.txt', 'a') as f:
-        f.write(str(buf.__dict__))
-        f.write('\n')
-
 
 def multi_cursor_insert(s):
-    global buf
-
-    if not buf:
-        buf = current_buffer()
-
-    with open('python_log.txt', 'a') as f:
-        f.write(str(buf.__dict__))
-        f.write('\n')
+    buf = editor.current_buffer
 
     if hasattr(buf, 'second_cursor'):
         x, y = buf.second_cursor
@@ -38,10 +23,7 @@ def multi_cursor_insert(s):
 
 
 def multi_cursor_backspace():
-    global buf
-
-    if not buf:
-        buf = current_buffer()
+    buf = editor.current_buffer
 
     if hasattr(buf, 'second_cursor'):
         x, y = buf.second_cursor
