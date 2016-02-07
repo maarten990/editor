@@ -13,6 +13,7 @@ typedef struct {
     PyObject_HEAD
     struct Buffer *buffer;
     PyObject *cursor;
+    PyObject *dict;
 } PyBuffer;
 
 static PyMemberDef PyBuffer_members[] = {
@@ -50,8 +51,8 @@ static int PyBuffer_setcursor(PyBuffer *self, PyObject *value, void *closure)
 static PyGetSetDef PyBuffer_getseters[] = {
     {"cursor",
      (getter)PyBuffer_getcursor, (setter)PyBuffer_setcursor,
-     "the cursor",
-     NULL},
+     "the cursor", NULL},
+    {"__dict__", PyObject_GenericGetDict, PyObject_GenericSetDict},
     {NULL}  /* Sentinel */
 };
 
@@ -133,8 +134,8 @@ static PyTypeObject PyBufferType = {
     0,                           /* tp_hash  */
     0,                           /* tp_call */
     0,                           /* tp_str */
-    0,                           /* tp_getattro */
-    0,                           /* tp_setattro */
+    PyObject_GenericGetAttr,     /* tp_getattro */
+    PyObject_GenericSetAttr,     /* tp_setattro */
     0,                           /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,          /* tp_flags */
     "A buffer representation",   /* tp_doc */
@@ -151,10 +152,10 @@ static PyTypeObject PyBufferType = {
     0,                           /* tp_dict */
     0,                           /* tp_descr_get */
     0,                           /* tp_descr_set */
-    0,                           /* tp_dictoffset */
+    offsetof(PyBuffer, dict),    /* tp_dictoffset */
     0,                           /* tp_init */
     0,                           /* tp_alloc */
-    0,                           /* tp_new */
+    PyType_GenericNew,           /* tp_new */
 };
 
 static PyObject *editor_current_buffer(PyObject *self, PyObject *args)
