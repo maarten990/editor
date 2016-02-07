@@ -23,14 +23,14 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if (ui_init() != 0) {
+    if (ui_init(buffer) != 0) {
         printf("Error initializing termbox\n");
         return -1;
     }
 
     python_init();
 
-    ui_loop(buffer);
+    ui_loop();
 
     python_destroy();
     ui_destroy();

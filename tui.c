@@ -17,8 +17,9 @@ int min(int x, int y) {
     return x < y ? x : y;
 }
 
-int ui_init()
+int ui_init(struct Buffer *buffer)
 {
+    active_buffer = buffer;
     return tb_init();
 }
 
@@ -30,8 +31,10 @@ void set_view(struct Buffer *buffer)
     buffer->view.status_message = "";
 }
 
-void ui_loop(struct Buffer *buffer)
+void ui_loop()
 {
+    struct Buffer *buffer = active_buffer;
+
     set_view(buffer);
     ui_draw(buffer);
     active_buffer = buffer;

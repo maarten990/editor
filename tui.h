@@ -6,13 +6,13 @@
 extern struct Buffer *active_buffer;
 
 // initialize the UI
-int ui_init();
+int ui_init(struct Buffer *buffer);
 
 // set the viewport of the buffer
 void set_view(struct Buffer *buffer);
 
 // enter the main loop of the UI
-void ui_loop(struct Buffer *buffer);
+void ui_loop();
 
 // draw current state of the buffer
 void ui_draw(struct Buffer *buffer);
