@@ -27,7 +27,8 @@ void set_view(struct Buffer *buffer)
 {
     buffer->view.width = tb_width();
     buffer->view.height = tb_height() - 1;
-    buffer->view.start = 0;
+    buffer->view.start_y = 0;
+    buffer->view.start_x = 0;
     buffer->view.status_message = "";
 }
 
@@ -134,18 +135,21 @@ void ui_draw(struct Buffer *buffer)
     tb_set_clear_attributes(COLOR_FOREGROUND, COLOR_BACKGROUND);
     tb_clear();
 
-    struct Line *line = lines_nth(buffer->lines, buffer->view.start);
+    struct Line *line = lines_nth(buffer->lines, buffer->view.start_y);
     int row = 0;
+    int start_x = buffer->view.start_x;
 
     do {
         rune *disp = line_display(line);
+        int size = strlen(disp);
 
-        for (int col = 0; col < min(strlen(disp), buffer->view.width); ++col) {
-            tb_change_cell(col, row, disp[col], COLOR_FOREGROUND, COLOR_BACKGROUND);
+        for (int col = 0; col < min(size - start_x, buffer->view.width); ++col) {
+            tb_change_cell(col, row, disp[start_x + col], COLOR_FOREGROUND,
+                           COLOR_BACKGROUND);
         }
 
-        if (buffer->view.start + row == buffer->cursor_y) {
-            tb_set_cursor(line->cursor, row);
+        if (buffer->view.start_y + row == buffer->cursor_y) {
+            tb_set_cursor(line->cursor - start_x, row);
         }
     } while ((line = line->next) != NULL && ++row);
 

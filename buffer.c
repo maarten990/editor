@@ -16,7 +16,8 @@ struct Buffer *buffer_new()
     struct View view = {
         .width = -1,
         .height = -1,
-        .start = 0,
+        .start_y = 0,
+        .start_x = 0,
         .status_message = NULL,
     };
 
@@ -25,10 +26,37 @@ struct Buffer *buffer_new()
     return buffer;
 }
 
+// update the view to keep the cursor within bounds
+static void buffer_update_view(struct Buffer *buf)
+{
+    // check horizontally
+    int too_far = (buf->cursor_x - buf->view.start_x) - buf->view.width;
+    if (too_far >= 0)
+        buf->view.start_x += too_far + 1;
+    else {
+        int offset = (buf->cursor_x - buf->view.start_x);
+        if (offset < 0)
+            buf->view.start_x += offset;
+    }
+
+
+    // check vertically
+    too_far = (buf->cursor_y - buf->view.start_y) - buf->view.height;
+    if (too_far >= 0) {
+        buf->view.start_y += too_far + 1;
+    } else {
+        int offset = (buf->cursor_y - buf->view.start_y);
+        if (offset < 0)
+            buf->view.start_y += offset;
+    }
+}
+
 void buffer_insert(struct Buffer *buf, rune ch)
 {
     line_insert_char(buf->current_line, ch);
     buf->cursor_x += 1;
+
+    buffer_update_view(buf);
 }
 
 void buffer_delete_backwards(struct Buffer *buf, int n)
@@ -57,11 +85,14 @@ void buffer_delete_backwards(struct Buffer *buf, int n)
 
         lines_remove(buf->lines, buf->current_line->next);
     }
+
+    buffer_update_view(buf);
 }
 
 void buffer_move_cursor_x(struct Buffer *buf, int offset)
 {
     buf->cursor_x += line_move_cursor(buf->current_line, offset);
+    buffer_update_view(buf);
 }
 
 void buffer_move_cursor_y(struct Buffer *buf, int offset)
@@ -93,16 +124,8 @@ void buffer_move_cursor_y(struct Buffer *buf, int offset)
     line_move_cursor_abs(buf->current_line, buf->cursor_x);
     buf->cursor_x = buf->current_line->cursor;
 
+    buffer_update_view(buf);
     // adjust the view if necessary
-    if (offset > 0) {
-        int too_far = (buf->cursor_y - buf->view.start) - buf->view.height;
-        if (too_far >= 0)
-            buf->view.start += too_far + 1;
-    } else {
-        int offset = (buf->cursor_y - buf->view.start);
-        if (offset < 0)
-            buf->view.start += offset;
-    }
 }
 
 void buffer_free(struct Buffer *buf)

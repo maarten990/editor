@@ -13,7 +13,8 @@ struct Buffer {
     struct View {
         int width;
         int height;
-        int start;
+        int start_y;
+        int start_x;
         char *status_message;
     } view;
 };
