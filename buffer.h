@@ -2,6 +2,7 @@
 #define EDITOR_BUFFER_H
 
 #include "line.h"
+#include "list.h"
 
 struct Buffer {
     struct Line head;
@@ -10,8 +11,11 @@ struct Buffer {
     int cursor_y;
     int n_lines;
     char *filename;
+    struct list_head list;
 
     struct View {
+        int offset_x;
+        int offset_y;
         int width;
         int height;
         int start_y;

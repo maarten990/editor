@@ -15,6 +15,7 @@ struct Buffer *buffer_new()
     buffer->filename = NULL;
 
     INIT_LIST_HEAD(&buffer->head.list);
+    INIT_LIST_HEAD(&buffer->list);
     buffer->head.is_head = 1;
 
     struct View view = {
