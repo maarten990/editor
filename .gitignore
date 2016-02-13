@@ -4,3 +4,6 @@ editor
 build
 .idea
 logfile.txt
+.waf*
+.lock*
+*.txt
