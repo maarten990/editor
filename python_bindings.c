@@ -1,8 +1,10 @@
 #include <Python.h>
+#include <string.h>
 #include <stdio.h>
+#include "python_mod.h"
 #include "python_bindings.h"
-#include "logging.h"
 #include "tinydir.h"
+#include "logging.h"
 
 PyObject *locals;
 

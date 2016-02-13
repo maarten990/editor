@@ -356,13 +356,11 @@ int tinydir_readfile(const tinydir_dir *dir, tinydir_file *file)
 
 	strcpy(file->path, dir->path);
 	strcat(file->path, "/");
-	strcpy(file->name,
 #ifdef _MSC_VER
-		dir->_f.cFileName
+	strcpy(file->name, dir->_f.cFileName);
 #else
-		dir->_e->d_name
+	strcpy(file->name, dir->_e->d_name);
 #endif
-	);
 	strcat(file->path, file->name);
 #ifndef _MSC_VER
 	if (stat(file->path, &file->_s) == -1)
