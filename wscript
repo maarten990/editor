@@ -5,17 +5,17 @@ top = '.'
 out = 'build'
 
 def options(opt):
-        opt.load('compiler_c')
+    opt.load('compiler_c')
 
 def configure(conf):
-        conf.load('compiler_c')
+    conf.load('compiler_c')
 
-        conf.check_cc(lib='termbox',
-                      mandatory=True, 
-                      uselib_store='TERMBOX')
+    conf.check_cc(lib='termbox',
+                  mandatory=True,
+                  uselib_store='TERMBOX')
 
-        conf.check_cfg(path='python3-config', args='--cflags --ldflags',
-                       package='', uselib_store='PYTHON')
+    conf.check_cfg(path='python3-config', args='--cflags --ldflags',
+                   package='', uselib_store='PYTHON')
 
 def build(bld):
     sources = bld.path.ant_glob('*.c')
