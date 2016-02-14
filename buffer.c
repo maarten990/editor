@@ -125,7 +125,6 @@ void buffer_move_cursor_y(struct Buffer *buf, int offset)
     buf->cursor_x = buf->current_line->cursor;
 
     buffer_update_view(buf);
-    // adjust the view if necessary
 }
 
 void buffer_free(struct Buffer *buf)
@@ -200,8 +199,9 @@ void buffer_break_at_cursor(struct Buffer *buf)
 
     lines_add_after(buf->lines, buf->current_line, line_new(newline_text));
 
-    buf->cursor_x = 0;
+    buffer_move_cursor_x(buf, -buf->cursor_x);
     buffer_move_cursor_y(buf, 1);
+    buf->view.start_x = 0; // TODO: figure out why this is necessary and fix it
 }
 
 int buffer_write_to_file(struct Buffer *buf, const char *path)
