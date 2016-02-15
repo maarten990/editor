@@ -99,7 +99,7 @@ static PyObject *PyBuffer_get_line(PyBuffer *self, PyObject *args)
         return NULL;
     }
 
-    char *display = line_display(lines_nth(self->buffer->lines, y));
+    char *display = line_display(buffer_nth_line(self->buffer, y));
     return Py_BuildValue("s", display);
 }
 

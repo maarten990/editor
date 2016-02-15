@@ -3,16 +3,19 @@
 #include <string.h>
 #include <errno.h>
 #include "buffer.h"
+#include "logging.h"
 #include "util.h"
 
 struct Buffer *buffer_new()
 {
     struct Buffer *buffer = malloc(sizeof(struct Buffer));
-    buffer->lines = lines_new();
-    buffer->current_line = buffer->lines->first;
+    buffer->current_line = NULL;
     buffer->cursor_x = 0;
     buffer->cursor_y = 0;
     buffer->filename = NULL;
+
+    INIT_LIST_HEAD(&buffer->head.list);
+    buffer->head.is_head = 1;
 
     struct View view = {
         .width = -1,
@@ -68,7 +71,7 @@ void buffer_delete_backwards(struct Buffer *buf, int n)
     int diff = n - deleted;
 
     // join with the previous line if we're deleting past the start of the line
-    if (diff != 0 && buf->current_line->previous != NULL) {
+    if (diff != 0 && line_previous(buf->current_line) != NULL) {
         rune *text = line_display(buf->current_line);
         int size = strlen(text);
         buffer_move_cursor_y(buf, -1);
@@ -84,7 +87,13 @@ void buffer_delete_backwards(struct Buffer *buf, int n)
         // move the cursor back to the right place
         buffer_move_cursor_x(buf, -size);
 
-        lines_remove(buf->lines, buf->current_line->next);
+        // delete the next line
+        struct Line *next = line_next(buf->current_line);
+        log_str("Deleting line: %s\n", line_display(next));
+        if (!next->is_head) {
+            list_del(&next->list);
+            line_free(next);
+        }
     }
 
     buffer_update_view(buf);
@@ -101,10 +110,10 @@ void buffer_move_cursor_y(struct Buffer *buf, int offset)
     // moving downwards
     if (offset > 0) {
         for (int i = 0; i < offset; ++i) {
-            if (buf->current_line->next == NULL)
+            if (line_next(buf->current_line) == NULL)
                 break;
 
-            buf->current_line = buf->current_line->next;
+            buf->current_line = line_next(buf->current_line);
             buf->cursor_y += 1;
         }
     }
@@ -112,10 +121,10 @@ void buffer_move_cursor_y(struct Buffer *buf, int offset)
     // moving upwards
     else {
         for (int i = 0; i > offset; --i) {
-            if (buf->current_line->previous == NULL)
+            if (line_previous(buf->current_line) == NULL)
                 break;
 
-            buf->current_line = buf->current_line->previous;
+            buf->current_line = line_previous(buf->current_line);
             buf->cursor_y -= 1;
         }
     }
@@ -130,18 +139,29 @@ void buffer_move_cursor_y(struct Buffer *buf, int offset)
 
 void buffer_free(struct Buffer *buf)
 {
-    lines_free(buf->lines);
     free(buf);
 }
 
 void buffer_add_line(struct Buffer *buf, struct Line *line)
 {
-    lines_add(buf->lines, line);
-
-    if (buf->current_line == NULL) {
+    if (buf->current_line == NULL)
         buf->current_line = line;
-        buf->cursor_y = 0;
-    }
+
+    list_add_tail(&line->list, &buf->head.list);
+}
+
+struct Line *buffer_nth_line(struct Buffer *buf, int n)
+{
+	struct Line *pos;
+	
+	list_for_each_entry(pos, &buf->head.list, list) {
+        if (n == 0)
+            return pos;
+
+        n -= 1;
+	}
+
+    return NULL;
 }
 
 int buffer_read_file(struct Buffer *buf, const char *path)
@@ -151,7 +171,7 @@ int buffer_read_file(struct Buffer *buf, const char *path)
     if (file == NULL)
         return -1;
 
-    if (buf->lines->first != NULL)
+    if (buf->current_line != NULL)
         buffer_clear(buf);
 
     ssize_t bytes_read;
@@ -178,9 +198,8 @@ int buffer_read_file(struct Buffer *buf, const char *path)
 
 void buffer_clear(struct Buffer *buf)
 {
+    line_delete_list(buf->current_line);
     buf->current_line = NULL;
-    lines_free(buf->lines);
-    buf->lines = lines_new();
 }
 
 void buffer_break_at_cursor(struct Buffer *buf)
@@ -198,7 +217,8 @@ void buffer_break_at_cursor(struct Buffer *buf)
     buffer_delete_backwards(buf,
                             buf->current_line->cursor - buf->cursor_x);
 
-    lines_add_after(buf->lines, buf->current_line, line_new(newline_text));
+    struct Line *new = line_new(newline_text);
+    list_add(&new->list, &buf->current_line->list);
 
     buffer_move_cursor_x(buf, -buf->cursor_x);
     buffer_move_cursor_y(buf, 1);
@@ -219,13 +239,13 @@ int buffer_write_to_file(struct Buffer *buf, const char *path)
         return -1;
     }
 
-    struct Line *line = buf->lines->first;
+	struct Line *pos;
     char *disp;
-
-    do {
-        disp = line_display(line);
-        fprintf(file, "%s\n", disp);
-    } while ((line = line->next) != NULL);
+	
+	list_for_each_entry(pos, &buf->head.list, list) {
+		disp = line_display(pos);
+		fprintf(file, "%s\n", disp);
+	}
 
     fclose(file);
 

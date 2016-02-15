@@ -4,10 +4,11 @@
 #include "line.h"
 
 struct Buffer {
-    struct Lines *lines;
+    struct Line head;
     struct Line *current_line;
     int cursor_x;
     int cursor_y;
+    int n_lines;
     char *filename;
 
     struct View {
@@ -39,6 +40,9 @@ void buffer_move_cursor_y(struct Buffer *buf, int offset);
 
 // add a new line after the current line
 void buffer_add_line(struct Buffer *buf, struct Line *line);
+
+// return the nth line, starting from 0
+struct Line *buffer_nth_line(struct Buffer *buf, int n);
 
 // read a file's contents into the buffer
 int buffer_read_file(struct Buffer *buf, const char *path);

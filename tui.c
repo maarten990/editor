@@ -136,13 +136,15 @@ void ui_draw(struct Buffer *buffer)
     tb_set_clear_attributes(COLOR_FOREGROUND, COLOR_BACKGROUND);
     tb_clear();
 
-    struct Line *line = lines_nth(buffer->lines, buffer->view.start_y);
-    int row = 0;
+	struct Line *line;
+    rune *disp;
+    int size;
     int start_x = buffer->view.start_x;
-
-    do {
-        rune *disp = line_display(line);
-        int size = strlen(disp);
+    int row = 0;
+	
+	list_for_each_entry(line, &buffer->head.list, list) {
+        disp = line_display(line);
+        size = strlen(disp);
 
         for (int col = 0; col < min(size - start_x, buffer->view.width); ++col) {
             tb_change_cell(col, row, disp[start_x + col], COLOR_FOREGROUND,
@@ -152,7 +154,9 @@ void ui_draw(struct Buffer *buffer)
         if (buffer->view.start_y + row == buffer->cursor_y) {
             tb_set_cursor(line->cursor - start_x, row);
         }
-    } while ((line = line->next) != NULL && ++row);
+
+        row += 1;
+    }
 
     draw_statusbar(buffer);
     tb_present();

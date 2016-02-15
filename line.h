@@ -2,18 +2,14 @@
 #define LINE_H
 
 #include "gapbuffer.h"
+#include "list.h"
 
 struct Line {
     struct Gapbuffer *gapbuf;
     int cursor;
 
-    struct Line *next;
-    struct Line *previous;
-};
-
-struct Lines {
-    struct Line *first;
-    struct Line *last;
+    struct list_head list;
+    int is_head;
 };
 
 struct Line *line_new(rune *contents);
@@ -35,21 +31,10 @@ rune *line_display(struct Line *line);
 // move the cursor to the absolute position given by cursor
 int line_move_cursor_abs(struct Line *line, int cursor);
 
-struct Lines *lines_new();
+// return the previous/next lines in the list
+struct Line *line_previous(struct Line *line);
+struct Line *line_next(struct Line *line);
 
-void lines_free(struct Lines *list);
-
-// append a line to the end of the list
-void lines_add(struct Lines *list, struct Line *line);
-
-// insert a line into the list after the given other line
-void lines_add_after(struct Lines *list, struct Line *before,
-                     struct Line *line);
-
-// remove a given line from the list
-void lines_remove(struct Lines *list, struct Line *line);
-
-// return the n'th element of the list
-struct Line *lines_nth(struct Lines *list, int n);
+void line_delete_list(struct Line *line);
 
 #endif /* LINE_H */

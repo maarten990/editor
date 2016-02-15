@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "line.h"
+#include "list.h"
 
 struct Line *line_new(rune *contents)
 {
@@ -8,9 +9,9 @@ struct Line *line_new(rune *contents)
     line->gapbuf = gapbuffer_new(contents, 16);
     line->cursor = line->gapbuf->gapstart;
 
-    line->next = NULL;
-    line->previous = NULL;
-
+    INIT_LIST_HEAD(&line->list);
+    line->is_head = 0;
+	
     return line;
 }
 
@@ -54,80 +55,25 @@ int line_move_cursor_abs(struct Line *line, int cursor)
     return line_move_cursor(line, offset);
 }
 
-struct Lines *lines_new()
+struct Line *line_previous(struct Line *line)
 {
-    struct Lines *lines = malloc(sizeof(struct Lines));
-    lines->first = NULL;
-    lines->last = NULL;
-
-    return lines;
+    struct Line *prev = list_entry(line->list.prev, struct Line, list);
+    return prev->is_head ? NULL : prev;
 }
 
-void lines_free(struct Lines *list)
+struct Line *line_next(struct Line *line)
 {
-    if (list->first != NULL) {
-        struct Line *next;
-        struct Line *line = list->first;
+    struct Line *next = list_entry(line->list.next, struct Line, list);
+    return next->is_head ? NULL : next;
+}
 
-        do {
-            next = line->next;
-            line_free(line);
-        } while (next != NULL);
+void line_delete_list(struct Line *line)
+{
+    struct list_head *pos, *q;
+    struct Line *tmp;
+
+    list_for_each_safe(pos, q, &(line->list)) {
+        tmp = list_entry(pos, struct Line, list);
+        line_free(tmp);
     }
-
-    free(list);
-}
-
-void lines_add(struct Lines *list, struct Line *line)
-{
-    // uninitialized list
-    if (list->last == NULL) {
-        list->first = line;
-        list->last = line;
-        return;
-    }
-
-    struct Line *previous_last = list->last;
-    previous_last->next = line;
-    line->previous = previous_last;
-    list->last = line;
-}
-
-void lines_add_after(struct Lines *list, struct Line *before,
-                     struct Line *line)
-{
-    struct Line *after = before->next;
-    if (after != NULL)
-        after->previous = line;
-
-    before->next = line;
-
-    line->previous = before;
-    line->next = after;
-}
-
-void lines_remove(struct Lines *list, struct Line *line)
-{
-    if (line->previous)
-        line->previous->next = line->next;
-
-    if (line->next)
-        line->next->previous = line->previous;
-
-    line_free(line);
-}
-
-struct Line *lines_nth(struct Lines *list, int n)
-{
-    struct Line *elem = list->first;
-
-    while (elem != NULL) {
-        if (n == 0)
-            return elem;
-
-        n -= 1;
-        elem = elem->next;
-    }
-
-    return NULL;
 }

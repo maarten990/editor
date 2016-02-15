@@ -22,4 +22,4 @@ def build(bld):
     libs = ['TERMBOX', 'PYTHON']
 
     bld.program(source=sources, use=libs, target=APPNAME,
-                cflags=['-O0', '-g', '-Wall', '-pedantic'])
+                cflags=['-O0', '-g', '-Wall', '-std=gnu99'])
