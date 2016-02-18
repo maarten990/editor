@@ -72,16 +72,16 @@ void ui_loop()
                 break;
             case TB_KEY_BACKSPACE:
             case TB_KEY_BACKSPACE2:
-                buffer_delete_backwards(active_buffer, 1);
-                /* python_exec("multi_cursor_backspace()\n"); */
+                /* buffer_delete_backwards(active_buffer, 1); */
+                python_exec("multi_cursor_backspace()\n");
                 break;
             case TB_KEY_SPACE:
-                buffer_insert(active_buffer, ' ');
-                /* python_exec("multi_cursor_insert(' ')\n"); */
+                /* buffer_insert(active_buffer, ' '); */
+                python_exec("multi_cursor_insert(' ')\n");
                 break;
             case TB_KEY_ENTER:
-                buffer_break_at_cursor(active_buffer);
-                //python_exec("newline_and_indent()\n");
+                /* buffer_break_at_cursor(active_buffer); */
+                python_exec("newline_and_indent()\n");
                 break;
             case TB_KEY_CTRL_S:
                 buffer_write_to_file(active_buffer, active_buffer->filename);
@@ -105,10 +105,10 @@ void ui_loop()
             default:
                 if (e.ch > 0 && e.ch <= 128) {
                     tb_utf8_unicode_to_char(&ch, e.ch);
-                    buffer_insert(active_buffer, ch);
-                    /* char cmd[128]; */
-                    /* sprintf(cmd, "multi_cursor_insert(\"%c\")", ch); */
-                    /* python_exec(cmd); */
+                    /* buffer_insert(active_buffer, ch); */
+                    char cmd[128];
+                    sprintf(cmd, "multi_cursor_insert(\"%c\")", ch);
+                    python_exec(cmd);
                 }
                 break;
             }

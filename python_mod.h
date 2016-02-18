@@ -10,7 +10,7 @@ extern struct Buffer *active_buffer;
 
 typedef struct {
     PyObject_HEAD
-    struct Buffer *buffer;
+    struct Buffer **buffer;
     PyObject *cursor;
     PyObject *dict;
 } PyBuffer;
@@ -21,8 +21,8 @@ static PyMemberDef PyBuffer_members[] = {
 
 static PyObject *PyBuffer_getcursor(PyBuffer *self, void *closure)
 {
-    PyObject *cursor = Py_BuildValue("(ii)", self->buffer->cursor_x,
-                                     self->buffer->cursor_y);
+    struct Buffer *buf = *(self->buffer);
+    PyObject *cursor = Py_BuildValue("(ii)", buf->cursor_x, buf->cursor_y);
 
     return cursor;
 }
@@ -41,8 +41,9 @@ static int PyBuffer_setcursor(PyBuffer *self, PyObject *value, void *closure)
         return -1;
     }
 
-    buffer_move_cursor_y(self->buffer, y - self->buffer->cursor_y);
-    buffer_move_cursor_x(self->buffer, x - self->buffer->cursor_x);
+    struct Buffer *buf = *(self->buffer);
+    buffer_move_cursor_y(buf, y - buf->cursor_y);
+    buffer_move_cursor_x(buf, x - buf->cursor_x);
 
     return 0;
 }
@@ -68,9 +69,9 @@ static PyObject *PyBuffer_insert(PyBuffer *self, PyObject *args)
 
     for (int i = 0; i < n; ++i) {
         if (str[i] == '\n')
-            buffer_break_at_cursor(self->buffer);
+            buffer_break_at_cursor(*(self->buffer));
         else
-            buffer_insert(self->buffer, str[i]);
+            buffer_insert(*(self->buffer), str[i]);
     }
 
     Py_INCREF(Py_None);
@@ -85,7 +86,7 @@ static PyObject *PyBuffer_delete_backwards(PyBuffer *self, PyObject *args)
         return NULL;
     }
 
-    buffer_delete_backwards(self->buffer, n);
+    buffer_delete_backwards(*(self->buffer), n);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -99,7 +100,7 @@ static PyObject *PyBuffer_get_line(PyBuffer *self, PyObject *args)
         return NULL;
     }
 
-    char *display = line_display(buffer_nth_line(self->buffer, y));
+    char *display = line_display(buffer_nth_line(*(self->buffer), y));
     return Py_BuildValue("s", display);
 }
 
