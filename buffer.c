@@ -44,7 +44,6 @@ static void buffer_update_view(struct Buffer *buf)
             buf->view.start_x += offset;
     }
 
-
     // check vertically
     too_far = (buf->cursor_y - buf->view.start_y) - buf->view.height;
     if (too_far >= 0) {

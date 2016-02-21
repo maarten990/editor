@@ -5,8 +5,9 @@
 #include <structmember.h>
 #include <stdlib.h>
 #include "buffer.h"
+#include "tui.h"
 
-extern struct Buffer *active_buffer;
+extern struct TUI_Pane *active_pane;
 
 typedef struct {
     PyObject_HEAD

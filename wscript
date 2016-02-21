@@ -22,4 +22,5 @@ def build(bld):
     libs = ['TERMBOX', 'PYTHON']
 
     bld.program(source=sources, use=libs, target=APPNAME,
-                cflags=['-O0', '-g', '-Wall', '-std=gnu99'])
+                cflags=['-O0', '-g', '-Wall', '-std=gnu99',
+                '-fdiagnostics-color'])

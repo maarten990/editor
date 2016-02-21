@@ -17,8 +17,7 @@ int main(int argc, char *argv[])
         buffer_add_line(buf, line_new("Hello World!"));
         buffer_add_line(buf, line_new("This is line 2."));
         buffer_add_line(buf, line_new("I am a duck."));
-        ui_add_buffer(buf);
-        active_buffer = buf;
+        ui_add_buffer(buf, 1, 1, 1, 0, 0);
     } else {
         int width = tb_width() / (argc - 1);
         for (int i = 1; i < argc; ++i) {
@@ -29,10 +28,9 @@ int main(int argc, char *argv[])
                 printf("Error opening file: %s\n", argv[1]);
                 continue;
             } else {
-                ui_add_buffer(buf);
-                set_view(buf, (i-1) * width, 0, width, tb_height() - 1, 0, 0);
-                if (active_buffer == NULL)
-                    active_buffer = buf;
+                ui_add_buffer(buf, 1,
+                              1.0 / (float)(argc - 1), 1,
+                              (i-1) * width, 0);
             }
         }
     }

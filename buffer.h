@@ -14,8 +14,6 @@ struct Buffer {
     struct list_head list;
 
     struct View {
-        int offset_x;
-        int offset_y;
         int width;
         int height;
         int start_y;

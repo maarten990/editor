@@ -16,6 +16,11 @@ class cursor_at:
         self.buf.cursor = (self.old_x, self.old_y)
 
 
+def move_cursor(x=0, y=0):
+    cx, cy = current_buffer.cursor
+    current_buffer.cursor = (cx + x, cy + y)
+
+
 def kill_line():
     _, y = current_buffer.cursor
     current_buffer.cursor = (999, y)

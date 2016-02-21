@@ -4,21 +4,38 @@
 #include "buffer.h"
 #include "list.h"
 
-extern struct list_head buffers;
-extern struct Buffer *active_buffer;
+extern struct list_head panes;
+extern struct TUI_Pane *active_pane;
+
+struct TUI_Pane {
+    struct list_head list;
+
+    struct Buffer *buf;
+
+    // a size 2**16 array apping termbox keycodes to Python strings
+    char **keymap;
+
+    int anchor_x;
+    int anchor_y;
+    int width_ratio;
+    int height_ratio;
+};
 
 // initialize the UI
 int ui_init();
 
 // set the viewport of the buffer
-void set_view(struct Buffer *buffer, int offset_x, int offset_y, int width,
-              int height, int x, int y);
+void set_view(struct Buffer *buffer, int width, int height, int x, int y);
 
 // enter the main loop of the UI
 void ui_loop();
 
+void fill_keymap(struct TUI_Pane *pane);
+
 // add a buffer to the list of buffers
-void ui_add_buffer(struct Buffer *buf);
+void ui_add_buffer(struct Buffer *buf, int make_active,
+                   double width_ratio, double height_ratio,
+                   int anchor_x, int anchor_y);
 
 // draw current state of the buffer
 void ui_draw();

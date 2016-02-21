@@ -26,7 +26,7 @@ PyMODINIT_FUNC PyInit_editor()
     // add a current_buffer variable
     PyObject *obj = PyObject_CallObject((PyObject *) &PyBufferType, NULL);
     PyBuffer *buf = (PyBuffer *)obj;
-    buf->buffer = &active_buffer;
+    buf->buffer = &active_pane->buf;
     PyModule_AddObject(m, "current_buffer", (PyObject *)buf);
 
     return m;
