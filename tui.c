@@ -150,9 +150,17 @@ void ui_draw()
         rune *disp;
         int size;
         int start_x = buffer->view.start_x;
+        int start_y = buffer->view.start_y;
         int row = 0;
 
-        list_for_each_entry(line, &buffer->head.list, list) {
+        // look up the starting row
+        struct list_head *head = &buffer->head.list;
+        for (int i = 0; i < start_y + 1; ++i)
+            head = head->next;
+
+        for (line = list_entry(head, struct Line, list); !line->is_head;
+             line = list_entry(line->list.next, struct Line, list))
+        {
             disp = line_display(line);
             size = strlen(disp);
 
@@ -172,6 +180,9 @@ void ui_draw()
             }
 
             row += 1;
+
+            if (row > buffer->view.height)
+                break;
         }
     }
 
