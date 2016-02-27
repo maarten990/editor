@@ -75,16 +75,16 @@ TB_KEY_BACKSPACE2       = 0x7F
 TB_KEY_CTRL_8           = 0x7F # clash with 'BACKSPACE2'
 
 set_global_bindings({
-    TB_KEY_SPACE       : "multi_cursor_insert(' ')\n",
-    TB_KEY_BACKSPACE   : "multi_cursor_backspace()\n",
-    TB_KEY_BACKSPACE2  : "multi_cursor_backspace()\n",
-    TB_KEY_SPACE       : "multi_cursor_insert(' ')\n",
-    TB_KEY_ENTER       : "newline_and_indent()\n",
-    TB_KEY_CTRL_R      : "add_multi_cursor()\n",
-    TB_KEY_CTRL_W      : "reset_multi_cursor()\n",
-    TB_KEY_CTRL_K      : "kill_line()\n",
-    TB_KEY_ARROW_RIGHT : "move_cursor(x=1)\n",
-    TB_KEY_ARROW_LEFT  : "move_cursor(x=-1)\n",
-    TB_KEY_ARROW_UP    : "move_cursor(y=-1)\n",
-    TB_KEY_ARROW_DOWN  : "move_cursor(y=1)\n"
+    TB_KEY_SPACE       : lambda: multi_cursor_insert(' '),
+    TB_KEY_BACKSPACE   : lambda: multi_cursor_backspace(),
+    TB_KEY_BACKSPACE2  : lambda: multi_cursor_backspace(),
+    TB_KEY_SPACE       : lambda: multi_cursor_insert(' '),
+    TB_KEY_ENTER       : lambda: newline_and_indent(),
+    TB_KEY_CTRL_R      : lambda: add_multi_cursor(),
+    TB_KEY_CTRL_W      : lambda: reset_multi_cursor(),
+    TB_KEY_CTRL_K      : lambda: kill_line(),
+    TB_KEY_ARROW_RIGHT : lambda: move_cursor(x=1),
+    TB_KEY_ARROW_LEFT  : lambda: move_cursor(x=-1),
+    TB_KEY_ARROW_UP    : lambda: move_cursor(y=-1),
+    TB_KEY_ARROW_DOWN  : lambda: move_cursor(y=1)
 })

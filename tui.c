@@ -76,9 +76,8 @@ void ui_loop()
             PyObject *key = Py_BuildValue("i", e.key);
             if (PyDict_Contains(active_pane->keymap, key)) {
                 PyObject *value = PyDict_GetItem(active_pane->keymap, key);
-                PyObject *str = PyUnicode_AsUTF8String(value);
-                python_exec(PyBytes_AsString(str));
-                Py_DECREF(str);
+                PyObject *ret = PyObject_CallObject(value, NULL);
+                Py_DECREF(ret);
             } else {
                 if (e.ch > 0 && e.ch <= 128) {
                     tb_utf8_unicode_to_char(&ch, e.ch);

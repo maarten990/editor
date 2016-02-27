@@ -14,7 +14,6 @@ struct TUI_Pane {
     struct Buffer *buf;
 
     // a dictionary mapping keycodes to callable PyObjects
-    // TODO: actually use PyObjects instead of strings
     PyObject *keymap;
 
     int anchor_x;
