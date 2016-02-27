@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "buffer.h"
 #include "tui.h"
+#include "logging.h"
 
 extern struct TUI_Pane *active_pane;
 
@@ -159,7 +160,32 @@ static PyTypeObject PyBufferType = {
     PyType_GenericNew,           /* tp_new */
 };
 
+static PyObject *editor_set_global_bindings(PyObject *module, PyObject *args)
+{
+    PyObject *dict;
+    if (!PyArg_ParseTuple(args, "O:set_global_keybinds", &dict)) {
+        PyErr_SetString(PyExc_TypeError, "Dictionary argument required.");
+        Py_RETURN_NONE;
+    }
+
+    if (active_pane->keymap == NULL)
+        active_pane->keymap = Py_BuildValue("{}");
+
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    long keycode;
+
+    while (PyDict_Next(dict, &pos, &key, &value)) {
+        keycode = PyLong_AsLong(key);
+        PyDict_SetItem(active_pane->keymap, key, value);
+    }
+
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef editorMethods[] = {
+    {"set_global_bindings", (PyCFunction)editor_set_global_bindings, METH_VARARGS,
+     "add the given mapping to the global keymap"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 

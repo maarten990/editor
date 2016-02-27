@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <termbox.h>
+#include <Python.h>
 #include <math.h>
 #include "tui.h"
 #include "python_bindings.h"
@@ -11,22 +12,6 @@
 
 struct list_head panes;
 struct TUI_Pane *active_pane = NULL;
-
-void fill_keymap(struct TUI_Pane *pane)
-{
-    char **keymap              = pane->keymap;
-    keymap[TB_KEY_BACKSPACE]   = "multi_cursor_backspace()\n";
-    keymap[TB_KEY_BACKSPACE2]  = "multi_cursor_backspace()\n";
-    keymap[TB_KEY_SPACE]       = "multi_cursor_insert(' ')\n";
-    keymap[TB_KEY_ENTER]       = "newline_and_indent()\n";
-    keymap[TB_KEY_CTRL_R]      = "add_multi_cursor()\n";
-    keymap[TB_KEY_CTRL_W]      = "reset_multi_cursor()\n";
-    keymap[TB_KEY_CTRL_K]      = "kill_line()\n";
-    keymap[TB_KEY_ARROW_RIGHT] = "move_cursor(x=1)\n";
-    keymap[TB_KEY_ARROW_LEFT]  = "move_cursor(x=-1)\n";
-    keymap[TB_KEY_ARROW_UP]    = "move_cursor(y=-1)\n";
-    keymap[TB_KEY_ARROW_DOWN]  = "move_cursor(y=1)\n";
-}
 
 int max(int x, int y) {
     return x < y ? y : x;
@@ -52,13 +37,11 @@ void ui_add_buffer(struct Buffer *buf, int make_active,
     pane->anchor_y = anchor_y;
     pane->height_ratio = height_ratio;
     pane->width_ratio = width_ratio;
+    pane->keymap = NULL;
 
     set_view(buf, tb_width() * width_ratio, tb_height() * height_ratio,
              0, 0);
 
-    pane->keymap = calloc(pow(2, 16), sizeof(char*));
-    fill_keymap(pane);
-    
     list_add_tail(&pane->list, &panes);
 
     if (make_active)
@@ -90,8 +73,12 @@ void ui_loop()
             if (e.key == TB_KEY_ESC)
                 return;
 
-            if (active_pane->keymap[e.key] != NULL) {
-                python_exec(active_pane->keymap[e.key]);
+            PyObject *key = Py_BuildValue("i", e.key);
+            if (PyDict_Contains(active_pane->keymap, key)) {
+                PyObject *value = PyDict_GetItem(active_pane->keymap, key);
+                PyObject *str = PyUnicode_AsUTF8String(value);
+                python_exec(PyBytes_AsString(str));
+                Py_DECREF(str);
             } else {
                 if (e.ch > 0 && e.ch <= 128) {
                     tb_utf8_unicode_to_char(&ch, e.ch);

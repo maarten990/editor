@@ -1,6 +1,7 @@
 #ifndef TUI_H
 #define TUI_H
 
+#include <Python.h>
 #include "buffer.h"
 #include "list.h"
 
@@ -12,8 +13,9 @@ struct TUI_Pane {
 
     struct Buffer *buf;
 
-    // a size 2**16 array apping termbox keycodes to Python strings
-    char **keymap;
+    // a dictionary mapping keycodes to callable PyObjects
+    // TODO: actually use PyObjects instead of strings
+    PyObject *keymap;
 
     int anchor_x;
     int anchor_y;
