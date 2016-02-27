@@ -32,8 +32,6 @@ void set_view(struct Buffer *buffer, int width, int height, int x, int y);
 // enter the main loop of the UI
 void ui_loop();
 
-void fill_keymap(struct TUI_Pane *pane);
-
 // add a buffer to the list of buffers
 void ui_add_buffer(struct Buffer *buf, int make_active,
                    double width_ratio, double height_ratio,
