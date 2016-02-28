@@ -181,8 +181,6 @@ static PyTypeObject PyBufferType = {
 };
 
 static PyMethodDef editorMethods[] = {
-    {"set_global_bindings", (PyCFunction)editor_set_global_bindings, METH_VARARGS,
-     "add the given mapping to the global keymap"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
