@@ -60,20 +60,21 @@ void python_load_plugins()
 {
     tinydir_dir dir;
     tinydir_open(&dir, "./plugins/");
+    python_exec("import sys; sys.path.append('./plugins/')");
 
     while (dir.has_next) {
         tinydir_file file;
         tinydir_readfile(&dir, &file);
-        log_str("Loading %s\n", file.path);
-
         if (!file.is_dir) {
-            PyObject *obj = Py_BuildValue("s", file.path);
-            FILE *f = _Py_fopen_obj(obj, "r+");
-            if (f != NULL) {
-                PyRun_SimpleFile(f, file.name);
-            } else {
-                log_str("Error: could not open path %s\n", file.path);
-            }
+            int len = strlen(file.name);
+            char name[len];
+            char cmd[128];
+
+            strcpy(name, file.name);
+            name[strlen(file.name) - 3] = '\0';
+            log_str("Importing %s\n", name);
+            sprintf(cmd, "from %s import *", name);
+            python_exec(cmd);
         }
 
         tinydir_next(&dir);

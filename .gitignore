@@ -7,3 +7,4 @@ logfile.txt
 .waf*
 .lock*
 *.txt
+__pycache__

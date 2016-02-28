@@ -1,4 +1,6 @@
-from editor import set_global_bindings
+from editor import current_buffer
+from util import *
+from multiple_cursors import *
 
 TB_KEY_F1               = (0xFFFF-0)
 TB_KEY_F2               = (0xFFFF-1)
@@ -74,7 +76,24 @@ TB_KEY_SPACE            = 0x20
 TB_KEY_BACKSPACE2       = 0x7F
 TB_KEY_CTRL_8           = 0x7F # clash with 'BACKSPACE2'
 
-set_global_bindings({
+def set_mode(mode):
+    if mode == 'insert':
+        current_buffer.keymap = insert_mode_map
+    if mode == 'normal':
+        current_buffer.keymap = normal_mode_map
+
+def forward_word():
+    x, y = current_buffer.cursor
+    line = current_buffer.get_line(y)
+    offset = line[x+1:].find(' ')
+    move_cursor(x=offset)
+
+normal_mode_map = {
+    TB_KEY_CTRL_W: lambda: forward_word(),
+    TB_KEY_CTRL_I: lambda: set_mode('insert')
+}
+
+insert_mode_map = {
     TB_KEY_SPACE       : lambda: multi_cursor_insert(' '),
     TB_KEY_BACKSPACE   : lambda: multi_cursor_backspace(),
     TB_KEY_BACKSPACE2  : lambda: multi_cursor_backspace(),
@@ -86,5 +105,8 @@ set_global_bindings({
     TB_KEY_ARROW_RIGHT : lambda: move_cursor(x=1),
     TB_KEY_ARROW_LEFT  : lambda: move_cursor(x=-1),
     TB_KEY_ARROW_UP    : lambda: move_cursor(y=-1),
-    TB_KEY_ARROW_DOWN  : lambda: move_cursor(y=1)
-})
+    TB_KEY_ARROW_DOWN  : lambda: move_cursor(y=1),
+    TB_KEY_CTRL_C      : lambda: set_mode('normal')
+}
+
+current_buffer.keymap = insert_mode_map

@@ -1,4 +1,4 @@
-from editor import current_buffer, set_global_bindings
+from editor import current_buffer
 import re
 
 

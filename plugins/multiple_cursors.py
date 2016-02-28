@@ -1,4 +1,5 @@
 from editor import current_buffer
+from util import *
 
 current_buffer.cursors = []
 
