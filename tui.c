@@ -37,7 +37,6 @@ void ui_add_buffer(struct Buffer *buf, int make_active,
     pane->anchor_y = anchor_y;
     pane->height_ratio = height_ratio;
     pane->width_ratio = width_ratio;
-    pane->keymap = NULL;
 
     set_view(buf, tb_width() * width_ratio, tb_height() * height_ratio,
              0, 0);
@@ -74,11 +73,24 @@ void ui_loop()
                 return;
 
             PyObject *key = Py_BuildValue("i", e.key);
-            if (PyDict_Contains(active_pane->keymap, key)) {
+            PyObject *ch_o = Py_BuildValue("i", e.ch);
+            if (active_pane->keymap != NULL &&
+                PyDict_Contains(active_pane->keymap, key))
+            {
                 PyObject *value = PyDict_GetItem(active_pane->keymap, key);
                 PyObject *ret = PyObject_CallObject(value, NULL);
                 Py_DECREF(ret);
-            } else {
+            }
+
+            else if (active_pane->keymap != NULL &&
+                     PyDict_Contains(active_pane->keymap, ch_o))
+            {
+                PyObject *value = PyDict_GetItem(active_pane->keymap, ch_o);
+                PyObject *ret = PyObject_CallObject(value, NULL);
+                Py_DECREF(ret);
+            }
+
+            else {
                 if (e.ch > 0 && e.ch <= 128) {
                     tb_utf8_unicode_to_char(&ch, e.ch);
                     char cmd[128];

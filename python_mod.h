@@ -14,6 +14,7 @@ typedef struct {
     PyObject_HEAD
     struct Buffer **buffer;
     PyObject *cursor;
+    PyObject *keymap;
     PyObject *dict;
 } PyBuffer;
 
@@ -50,10 +51,29 @@ static int PyBuffer_setcursor(PyBuffer *self, PyObject *value, void *closure)
     return 0;
 }
 
+static PyObject *PyBuffer_getkeymap(PyBuffer *self, void *closure)
+{
+    Py_INCREF(active_pane->keymap);
+    return active_pane->keymap;
+}
+
+static int PyBuffer_setkeymap(PyBuffer *self, PyObject *value, void *closure)
+{
+    if (active_pane->keymap != NULL)
+        Py_DECREF(active_pane->keymap);
+
+    Py_INCREF(value);
+    active_pane->keymap = value;
+
+    return 0;
+}
+
 static PyGetSetDef PyBuffer_getseters[] = {
     {"cursor",
      (getter)PyBuffer_getcursor, (setter)PyBuffer_setcursor,
      "the cursor", NULL},
+    {"keymap",
+     (getter)PyBuffer_getkeymap, (setter)PyBuffer_setkeymap},
     {"__dict__", PyObject_GenericGetDict, PyObject_GenericSetDict},
     {NULL}  /* Sentinel */
 };
@@ -159,29 +179,6 @@ static PyTypeObject PyBufferType = {
     0,                           /* tp_alloc */
     PyType_GenericNew,           /* tp_new */
 };
-
-static PyObject *editor_set_global_bindings(PyObject *module, PyObject *args)
-{
-    PyObject *dict;
-    if (!PyArg_ParseTuple(args, "O:set_global_keybinds", &dict)) {
-        PyErr_SetString(PyExc_TypeError, "Dictionary argument required.");
-        Py_RETURN_NONE;
-    }
-
-    if (active_pane->keymap == NULL)
-        active_pane->keymap = Py_BuildValue("{}");
-
-    PyObject *key, *value;
-    Py_ssize_t pos = 0;
-    long keycode;
-
-    while (PyDict_Next(dict, &pos, &key, &value)) {
-        keycode = PyLong_AsLong(key);
-        PyDict_SetItem(active_pane->keymap, key, value);
-    }
-
-    Py_RETURN_NONE;
-}
 
 static PyMethodDef editorMethods[] = {
     {"set_global_bindings", (PyCFunction)editor_set_global_bindings, METH_VARARGS,
