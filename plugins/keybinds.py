@@ -86,11 +86,22 @@ def forward_word():
     x, y = current_buffer.cursor
     line = current_buffer.get_line(y)
     offset = line[x+1:].find(' ')
-    move_cursor(x=offset)
+    move_cursor(x=offset + 2)
+
+def backward_word():
+    x, y = current_buffer.cursor
+    line = current_buffer.get_line(y)
+    offset = line[:x+1][::-1].find(' ')
+    move_cursor(x=-offset - 1)
 
 normal_mode_map = {
-    TB_KEY_CTRL_W: lambda: forward_word(),
-    TB_KEY_CTRL_I: lambda: set_mode('insert')
+    ord('w'): lambda: forward_word(),
+    ord('b'): lambda: backward_word(),
+    ord('i'): lambda: set_mode('insert'),
+    ord('l'): lambda: move_cursor(x=1),
+    ord('h'): lambda: move_cursor(x=-1),
+    ord('k'): lambda: move_cursor(y=-1),
+    ord('j'): lambda: move_cursor(y=1)
 }
 
 insert_mode_map = {
@@ -109,4 +120,4 @@ insert_mode_map = {
     TB_KEY_CTRL_C      : lambda: set_mode('normal')
 }
 
-current_buffer.keymap = insert_mode_map
+current_buffer.keymap = normal_mode_map
