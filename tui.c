@@ -4,14 +4,14 @@
 #include <termbox.h>
 #include <Python.h>
 #include <math.h>
-#include "tui.h"
-#include "python_bindings.h"
+#include "lib/ui.h"
+#include "lib/python_bindings.h"
 
 #define COLOR_BACKGROUND 18
 #define COLOR_FOREGROUND 15
 
 struct list_head panes;
-struct TUI_Pane *active_pane = NULL;
+struct UI_Pane *active_pane = NULL;
 
 int max(int x, int y) {
     return x < y ? y : x;
@@ -31,7 +31,7 @@ void ui_add_buffer(struct Buffer *buf, int make_active,
                    double width_ratio, double height_ratio,
                    int anchor_x, int anchor_y)
 {
-    struct TUI_Pane *pane = malloc(sizeof(struct TUI_Pane));
+    struct UI_Pane *pane = malloc(sizeof(struct UI_Pane));
     pane->buf = buf;
     pane->anchor_x = anchor_x;
     pane->anchor_y = anchor_y;
@@ -132,7 +132,7 @@ void ui_draw()
     tb_set_clear_attributes(COLOR_FOREGROUND, COLOR_BACKGROUND);
     tb_clear();
 
-    struct TUI_Pane *pane;
+    struct UI_Pane *pane;
     list_for_each_entry(pane, &panes, list) {
         struct Line *line;
         rune *disp;

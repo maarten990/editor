@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <termbox.h>
-#include "line.h"
-#include "tui.h"
-#include "python_bindings.h"
+#include "lib/line.h"
+#include "lib/ui.h"
+#include "lib/python_bindings.h"
 
 int main(int argc, char *argv[])
 {

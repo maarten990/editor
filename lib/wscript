@@ -1,0 +1,19 @@
+LIBNAME = 'libeditor'
+VERSION = '0.1'
+
+def options(opt):
+    opt.load('compiler_c')
+
+def configure(conf):
+    conf.load('compiler_c')
+
+    conf.check_cfg(path='python3-config', args='--cflags --ldflags',
+                   package='', uselib_store='PYTHON')
+
+def build(bld):
+    sources = bld.path.ant_glob('*.c')
+    libs = ['PYTHON']
+
+    bld.stlib(source=sources, use=libs, target=LIBNAME,
+              cflags=['-O0', '-g', '-Wall', '-std=gnu99',
+                      '-fdiagnostics-color'])

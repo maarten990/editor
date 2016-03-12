@@ -5,10 +5,10 @@
 #include <structmember.h>
 #include <stdlib.h>
 #include "buffer.h"
-#include "tui.h"
+#include "ui.h"
 #include "logging.h"
 
-extern struct TUI_Pane *active_pane;
+extern struct UI_Pane *active_pane;
 
 typedef struct {
     PyObject_HEAD

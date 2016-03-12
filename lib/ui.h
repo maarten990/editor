@@ -6,9 +6,9 @@
 #include "list.h"
 
 extern struct list_head panes;
-extern struct TUI_Pane *active_pane;
+extern struct UI_Pane *active_pane;
 
-struct TUI_Pane {
+struct UI_Pane {
     struct list_head list;
 
     struct Buffer *buf;
