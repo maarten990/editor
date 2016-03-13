@@ -1,4 +1,5 @@
 *.o
+*.a
 *.swp
 editor
 build
@@ -8,3 +9,6 @@ logfile.txt
 .lock*
 *.txt
 __pycache__
+.qmake.stash
+Makefile
+*.app
