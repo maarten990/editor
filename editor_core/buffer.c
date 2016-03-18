@@ -24,6 +24,7 @@ struct Buffer *buffer_new()
         .start_y = 0,
         .start_x = 0,
         .status_message = NULL,
+        .dirty = NULL,
     };
 
     buffer->view = view;
@@ -61,6 +62,9 @@ void buffer_insert(struct Buffer *buf, rune ch)
     buf->cursor_x += 1;
 
     buffer_update_view(buf);
+
+    if (buf->view.dirty)
+        buf->view.dirty[buf->cursor_y - buf->view.start_y] = 1;
 }
 
 void buffer_delete_backwards(struct Buffer *buf, int n)
@@ -97,6 +101,9 @@ void buffer_delete_backwards(struct Buffer *buf, int n)
     }
 
     buffer_update_view(buf);
+
+    if (buf->view.dirty)
+        buf->view.dirty[buf->cursor_y - buf->view.start_y] = 1;
 }
 
 void buffer_move_cursor_x(struct Buffer *buf, int offset)

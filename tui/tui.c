@@ -4,8 +4,8 @@
 #include <termbox.h>
 #include <Python.h>
 #include <math.h>
-#include "lib/ui.h"
-#include "lib/python_bindings.h"
+#include "editor_core/ui.h"
+#include "editor_core/python_bindings.h"
 
 #define COLOR_BACKGROUND 18
 #define COLOR_FOREGROUND 15
@@ -24,7 +24,12 @@ int min(int x, int y) {
 int ui_init()
 {
     INIT_LIST_HEAD(&panes);
-    return tb_init();
+    int ret = tb_init();
+    tb_select_output_mode(TB_OUTPUT_256);
+    tb_set_clear_attributes(COLOR_FOREGROUND, COLOR_BACKGROUND);
+    tb_clear();
+
+    return ret;
 }
 
 void ui_add_buffer(struct Buffer *buf, int make_active,
@@ -54,6 +59,13 @@ void set_view(struct Buffer *buffer, int width, int height, int x, int y)
     buffer->view.start_x = x;
     buffer->view.start_y = y;
     buffer->view.status_message = "";
+
+    if (buffer->view.dirty)
+        free(buffer->view.dirty);
+
+    buffer->view.dirty = calloc(height, sizeof(char));
+    for (int i = 0; i < buffer->view.height; ++i)
+        buffer->view.dirty[i] = 1;
 }
 
 void ui_loop()
@@ -130,7 +142,6 @@ void ui_draw()
 {
     tb_select_output_mode(TB_OUTPUT_256);
     tb_set_clear_attributes(COLOR_FOREGROUND, COLOR_BACKGROUND);
-    tb_clear();
 
     struct UI_Pane *pane;
     list_for_each_entry(pane, &panes, list) {
@@ -139,6 +150,7 @@ void ui_draw()
         int size;
         int start_x = pane->buf->view.start_x;
         int start_y = pane->buf->view.start_y;
+        int anchor_x = pane->anchor_x;
         int row = 0;
 
         // look up the starting row
@@ -149,16 +161,26 @@ void ui_draw()
         for (line = list_entry(head, struct Line, list); !line->is_head;
              line = list_entry(line->list.next, struct Line, list))
         {
-            disp = line_display(line);
-            size = strlen(disp);
+            if (pane->buf->view.dirty[row] != 0) {
+                disp = line_display(line);
+                size = strlen(disp);
 
-            int anchor_x = pane->anchor_x;
-            for (int col = anchor_x;
-                 col < anchor_x + min(size - start_x, pane->buf->view.width);
-                 ++col)
-            {
-                tb_change_cell(col, row, disp[start_x + col - anchor_x], COLOR_FOREGROUND,
-                               COLOR_BACKGROUND);
+                // first paint the line contents
+                for (int col = anchor_x;
+                     col < anchor_x + min(size - start_x, pane->buf->view.width);
+                     ++col)
+                {
+                    tb_change_cell(col, row, disp[start_x + col - anchor_x], COLOR_FOREGROUND,
+                                   COLOR_BACKGROUND);
+                }
+
+                // then clear the rest of the line
+                for (int col = anchor_x + size - start_x;
+                     col < anchor_x + pane->buf->view.width;
+                     ++col)
+                {
+                    tb_change_cell(col, row, ' ', COLOR_FOREGROUND, COLOR_BACKGROUND);
+                }
             }
 
             if (pane == active_pane &&
@@ -172,10 +194,13 @@ void ui_draw()
             if (row > pane->buf->view.height)
                 break;
         }
+
+        // reset the dirty bits
+        for (int i = 0; i < pane->buf->view.height; ++i)
+            pane->buf->view.dirty[i] = 0;
     }
 
     draw_statusbar();
-
     tb_present();
 }
 

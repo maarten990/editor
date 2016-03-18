@@ -19,6 +19,7 @@ struct Buffer {
         int start_y;
         int start_x;
         char *status_message;
+        char *dirty;
     } view;
 };
 
