@@ -2,6 +2,10 @@ TEMPLATE = app
 
 CONFIG += release
 
+mac {
+    config -= app_bundle
+}
+
 QMAKE_CFLAGS += -std=gnu99
 
 SOURCES += *.c
