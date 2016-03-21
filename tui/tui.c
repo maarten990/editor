@@ -138,6 +138,69 @@ void draw_statusbar()
     }
 }
 
+void draw_line(struct Line *line, struct UI_Pane *pane, int row)
+{
+    int start_x = pane->buf->view.start_x;
+    int anchor_x = pane->anchor_x;
+    rune *disp = line_display(line);
+    int size = strlen(disp);
+
+    // first paint the line contents
+    for (int col = anchor_x;
+         col < anchor_x + min(size - start_x, pane->buf->view.width);
+         ++col)
+    {
+        tb_change_cell(col, row, disp[start_x + col - anchor_x], COLOR_FOREGROUND,
+                       COLOR_BACKGROUND);
+    }
+
+    // then clear the rest of the line
+    for (int col = anchor_x + size - start_x;
+         col < anchor_x + pane->buf->view.width;
+         ++col)
+    {
+        tb_change_cell(col, row, ' ', COLOR_FOREGROUND, COLOR_BACKGROUND);
+    }
+}
+
+void draw_pane(struct UI_Pane *pane)
+{
+    struct Line *line;
+    int start_x = pane->buf->view.start_x;
+    int start_y = pane->buf->view.start_y;
+    int anchor_x = pane->anchor_x;
+    int row = 0;
+
+    // look up the starting row
+    struct list_head *head = &pane->buf->head.list;
+    for (int i = 0; i < start_y + 1; ++i)
+        head = head->next;
+
+    // iterate over all lines as long as we don't wrap around to the head of
+    // the list
+    for (line = list_entry(head, struct Line, list); !line->is_head;
+         line = list_entry(line->list.next, struct Line, list))
+    {
+        if (pane->buf->view.dirty[row] != 0)
+            draw_line(line, pane, row);
+
+        // draw the cursor
+        if (pane == active_pane &&
+            pane->buf->view.start_y + row == pane->buf->cursor_y)
+        {
+            tb_set_cursor(line->cursor - start_x + anchor_x, row);
+        }
+
+        row += 1;
+        if (row > pane->buf->view.height)
+            break;
+    }
+
+    // reset the dirty bits
+    for (int i = 0; i < pane->buf->view.height; ++i)
+        pane->buf->view.dirty[i] = 0;
+}
+
 void ui_draw()
 {
     tb_select_output_mode(TB_OUTPUT_256);
@@ -145,59 +208,7 @@ void ui_draw()
 
     struct UI_Pane *pane;
     list_for_each_entry(pane, &panes, list) {
-        struct Line *line;
-        rune *disp;
-        int size;
-        int start_x = pane->buf->view.start_x;
-        int start_y = pane->buf->view.start_y;
-        int anchor_x = pane->anchor_x;
-        int row = 0;
-
-        // look up the starting row
-        struct list_head *head = &pane->buf->head.list;
-        for (int i = 0; i < start_y + 1; ++i)
-            head = head->next;
-
-        for (line = list_entry(head, struct Line, list); !line->is_head;
-             line = list_entry(line->list.next, struct Line, list))
-        {
-            if (pane->buf->view.dirty[row] != 0) {
-                disp = line_display(line);
-                size = strlen(disp);
-
-                // first paint the line contents
-                for (int col = anchor_x;
-                     col < anchor_x + min(size - start_x, pane->buf->view.width);
-                     ++col)
-                {
-                    tb_change_cell(col, row, disp[start_x + col - anchor_x], COLOR_FOREGROUND,
-                                   COLOR_BACKGROUND);
-                }
-
-                // then clear the rest of the line
-                for (int col = anchor_x + size - start_x;
-                     col < anchor_x + pane->buf->view.width;
-                     ++col)
-                {
-                    tb_change_cell(col, row, ' ', COLOR_FOREGROUND, COLOR_BACKGROUND);
-                }
-            }
-
-            if (pane == active_pane &&
-                pane->buf->view.start_y + row == pane->buf->cursor_y)
-            {
-                tb_set_cursor(line->cursor - start_x + anchor_x, row);
-            }
-
-            row += 1;
-
-            if (row > pane->buf->view.height)
-                break;
-        }
-
-        // reset the dirty bits
-        for (int i = 0; i < pane->buf->view.height; ++i)
-            pane->buf->view.dirty[i] = 0;
+        draw_pane(pane);
     }
 
     draw_statusbar();
