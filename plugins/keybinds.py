@@ -94,6 +94,10 @@ def backward_word():
     offset = line[:x+1][::-1].find(' ')
     move_cursor(x=-offset - 1)
 
+class InsertKeymap(dict):
+    def __missing__(self, key):
+        return lambda: multi_cursor_insert(chr(key))
+
 normal_mode_map = {
     ord('w'): lambda: forward_word(),
     ord('b'): lambda: backward_word(),
@@ -104,7 +108,7 @@ normal_mode_map = {
     ord('j'): lambda: move_cursor(y=1)
 }
 
-insert_mode_map = {
+insert_mode_map = InsertKeymap({
     TB_KEY_SPACE       : lambda: multi_cursor_insert(' '),
     TB_KEY_BACKSPACE   : lambda: multi_cursor_backspace(),
     TB_KEY_BACKSPACE2  : lambda: multi_cursor_backspace(),
@@ -118,6 +122,6 @@ insert_mode_map = {
     TB_KEY_ARROW_UP    : lambda: move_cursor(y=-1),
     TB_KEY_ARROW_DOWN  : lambda: move_cursor(y=1),
     TB_KEY_CTRL_C      : lambda: set_mode('normal')
-}
+})
 
 current_buffer.keymap = normal_mode_map

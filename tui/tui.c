@@ -78,37 +78,33 @@ void ui_loop()
         struct tb_event e;
         tb_poll_event(&e);
 
-        char ch;
         switch (e.type) {
         case TB_EVENT_KEY:
             if (e.key == TB_KEY_ESC)
                 return;
 
-            PyObject *key = Py_BuildValue("i", e.key);
-            PyObject *ch_o = Py_BuildValue("i", e.ch);
+            // the event keycode is either bound to e.key or e.ch
+            int keycode = e.key > 0 ? e.key : e.ch;
+            PyObject *key = Py_BuildValue("i", keycode);
+
+            // check if the key is specifically defined in the keymap
+            // else check if the keymap has a __missing__ method and call that
             if (active_pane->keymap != NULL &&
                 PyDict_Contains(active_pane->keymap, key))
             {
                 PyObject *value = PyDict_GetItem(active_pane->keymap, key);
                 PyObject *ret = PyObject_CallObject(value, NULL);
                 Py_DECREF(ret);
-            }
+            } else if (PyObject_HasAttrString(active_pane->keymap, "__missing__")) {
+                PyObject *func = PyObject_CallMethod(active_pane->keymap,
+                                                     "__missing__",
+                                                     "i", keycode);
+                PyObject *ret = PyObject_CallObject(func, NULL);
 
-            else if (active_pane->keymap != NULL &&
-                     PyDict_Contains(active_pane->keymap, ch_o))
-            {
-                PyObject *value = PyDict_GetItem(active_pane->keymap, ch_o);
-                PyObject *ret = PyObject_CallObject(value, NULL);
-                Py_DECREF(ret);
-            }
+                Py_DECREF(func);
 
-            else {
-                if (e.ch > 0 && e.ch <= 128) {
-                    tb_utf8_unicode_to_char(&ch, e.ch);
-                    char cmd[128];
-                    sprintf(cmd, "multi_cursor_insert(\"%c\")", ch);
-                    python_exec(cmd);
-                }
+                if (ret != NULL)
+                    Py_DECREF(ret);
             }
             break;
 
