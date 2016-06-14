@@ -3,7 +3,7 @@ TEMPLATE = app
 CONFIG += release
 
 mac {
-    config -= app_bundle
+    CONFIG -= app_bundle
 }
 
 QMAKE_CFLAGS += -std=gnu99
