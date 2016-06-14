@@ -13,15 +13,12 @@ int main(int argc, char *argv[])
 
     // no arguments, use some dummy data
     if (argc == 1) {
-        struct Buffer *buf = buffer_new();
-        buffer_add_line(buf, line_new("Hello World!"));
-        buffer_add_line(buf, line_new("This is line 2."));
-        buffer_add_line(buf, line_new("I am a duck."));
+        struct Buffer *buf = buffer_new("Hello World!\nI am a text editor!");
         ui_add_buffer(buf, 1, 1, 1, 0, 0);
     } else {
         int width = tb_width() / (argc - 1);
         for (int i = 1; i < argc; ++i) {
-            struct Buffer *buf = buffer_new();
+            struct Buffer *buf = buffer_new("'");
             int err = buffer_read_file(buf, argv[i]);
 
             if (err) {

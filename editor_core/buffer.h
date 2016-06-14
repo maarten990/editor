@@ -5,13 +5,10 @@
 #include "list.h"
 
 struct Buffer {
-    struct Line head;
-    struct Line *current_line;
+    struct Gapbuffer *gapbuf;
     int cursor_x;
     int cursor_y;
-    int n_lines;
     char *filename;
-    struct list_head list;
 
     struct View {
         int width;
@@ -24,7 +21,7 @@ struct Buffer {
 };
 
 // allocate a new buffer
-struct Buffer *buffer_new();
+struct Buffer *buffer_new(const char *contents);
 
 // free a previously allocated buffer
 void buffer_free(struct Buffer *buf);

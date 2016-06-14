@@ -3,33 +3,53 @@
 #include <string.h>
 #include <errno.h>
 #include "buffer.h"
-#include "logging.h"
 #include "util.h"
 
-struct Buffer *buffer_new()
+struct Buffer *buffer_new(const char *contents)
 {
     struct Buffer *buffer = malloc(sizeof(struct Buffer));
-    buffer->current_line = NULL;
-    buffer->cursor_x = 0;
+
+    buffer->gapbuf = gapbuffer_new(contents, 16);
+    buffer->cursor_x = buffer->gapbuf->gapstart;
     buffer->cursor_y = 0;
-    buffer->filename = NULL;
-
-    INIT_LIST_HEAD(&buffer->head.list);
-    INIT_LIST_HEAD(&buffer->list);
-    buffer->head.is_head = 1;
-
-    struct View view = {
-        .width = -1,
-        .height = -1,
-        .start_y = 0,
-        .start_x = 0,
-        .status_message = NULL,
-        .dirty = NULL,
-    };
-
-    buffer->view = view;
 
     return buffer;
+}
+
+void buffer_free(struct Buffer *buffer)
+{
+    gapbuffer_free(buffer->gapbuf);
+    free(buffer);
+}
+
+void buffer_insert(struct Buffer *buf, rune ch)
+{
+    gapbuf_insert_char(buf->gapbuf, ch);
+    buf->cursor_x += 1;
+}
+
+void buffer_delete_backwards(struct Buffer *buf, int n)
+{
+    int deleted = gapbuf_delete_backwards(buf->gapbuf, n);
+    buf->cursor_x -= deleted;
+
+    return deleted;
+}
+
+void buffer_move_cursor_x(struct Buffer *buf, int offset)
+{
+    int moved = gapbuf_move_cursor(buf->gapbuf, offset);
+    buf->cursor_x += moved;
+}
+
+void buffer_move_cursor_y(struct Buffer *buf, int offset)
+{
+    // TODO
+}
+
+void buffer_add_line(struct Buffer *buf, struct Line *line)
+{
+    // TODO
 }
 
 // update the view to keep the cursor within bounds
@@ -56,123 +76,20 @@ static void buffer_update_view(struct Buffer *buf)
     }
 }
 
-void buffer_insert(struct Buffer *buf, rune ch)
-{
-    line_insert_char(buf->current_line, ch);
-    buf->cursor_x += 1;
-
-    buffer_update_view(buf);
-
-    if (buf->view.dirty)
-        buf->view.dirty[buf->cursor_y - buf->view.start_y] = 1;
-}
-
-void buffer_delete_backwards(struct Buffer *buf, int n)
-{
-    int deleted = line_delete_backwards(buf->current_line, n);
-    buf->cursor_x -= deleted;
-
-    int diff = n - deleted;
-
-    // join with the previous line if we're deleting past the start of the line
-    if (diff != 0 && line_previous(buf->current_line) != NULL) {
-        rune *text = line_display(buf->current_line);
-        int size = strlen(text);
-        buffer_move_cursor_y(buf, -1);
-        buffer_move_cursor_x(buf, buf->current_line->gapbuf->bufsize);
-
-        // insert a space if the text is being appended after existing text
-        if (buf->cursor_x > 0 && size > 0)
-            buffer_insert(buf, ' ');
-
-        for (int i = 0; i < size; ++i)
-            buffer_insert(buf, text[i]);
-
-        // move the cursor back to the right place
-        buffer_move_cursor_x(buf, -size);
-
-        // delete the next line
-        struct Line *next = line_next(buf->current_line);
-        log_str("Deleting line: %s\n", line_display(next));
-        if (!next->is_head) {
-            list_del(&next->list);
-            line_free(next);
-        }
-    }
-
-    buffer_update_view(buf);
-
-    if (buf->view.dirty)
-        buf->view.dirty[buf->cursor_y - buf->view.start_y] = 1;
-}
-
-void buffer_move_cursor_x(struct Buffer *buf, int offset)
-{
-    buf->cursor_x += line_move_cursor(buf->current_line, offset);
-    buffer_update_view(buf);
-}
-
-void buffer_move_cursor_y(struct Buffer *buf, int offset)
-{
-    // moving downwards
-    if (offset > 0) {
-        for (int i = 0; i < offset; ++i) {
-            if (line_next(buf->current_line) == NULL)
-                break;
-
-            buf->current_line = line_next(buf->current_line);
-            buf->cursor_y += 1;
-        }
-    }
-    
-    // moving upwards
-    else {
-        for (int i = 0; i > offset; --i) {
-            if (line_previous(buf->current_line) == NULL)
-                break;
-
-            buf->current_line = line_previous(buf->current_line);
-            buf->cursor_y -= 1;
-        }
-    }
-
-    // move the cursor of the line to the global cursor location, and make sure
-    // it's in range of the line
-    line_move_cursor_abs(buf->current_line, buf->cursor_x);
-    buf->cursor_x = buf->current_line->cursor;
-
-    buffer_update_view(buf);
-}
-
-void buffer_free(struct Buffer *buf)
-{
-    free(buf);
-}
-
-void buffer_add_line(struct Buffer *buf, struct Line *line)
-{
-    if (buf->current_line == NULL)
-        buf->current_line = line;
-
-    list_add_tail(&line->list, &buf->head.list);
-}
 
 struct Line *buffer_nth_line(struct Buffer *buf, int n)
 {
-	struct Line *pos;
-	
-	list_for_each_entry(pos, &buf->head.list, list) {
-        if (n == 0)
-            return pos;
-
-        n -= 1;
-	}
+    // TODO
 
     return NULL;
 }
 
 int buffer_read_file(struct Buffer *buf, const char *path)
 {
+    // TODO
+    return 0;
+
+    /*
     FILE *file = fopen(path, "r");
 
     if (file == NULL)
@@ -201,16 +118,20 @@ int buffer_read_file(struct Buffer *buf, const char *path)
     sprintf(buf->filename, "%s", path);
 
     return 0;
+    */
 }
 
 void buffer_clear(struct Buffer *buf)
 {
-    line_delete_list(buf->current_line);
-    buf->current_line = NULL;
+    // TODO
 }
 
 void buffer_break_at_cursor(struct Buffer *buf)
 {
+    // TODO
+    return;
+
+    /*
     rune *current_text = line_display(buf->current_line);
     rune newline_text[strlen(current_text)];
 
@@ -230,10 +151,14 @@ void buffer_break_at_cursor(struct Buffer *buf)
     buffer_move_cursor_x(buf, -buf->cursor_x);
     buffer_move_cursor_y(buf, 1);
     buf->view.start_x = 0; // TODO: figure out why this is necessary and fix it
+    */
 }
 
 int buffer_write_to_file(struct Buffer *buf, const char *path)
 {
+    // TODO
+
+    /*
     buf->view.status_message = "Saving...";
     // write the buffer to a temporary file which replaces the original file if
     // there were no errors
@@ -266,4 +191,5 @@ int buffer_write_to_file(struct Buffer *buf, const char *path)
 
     buf->view.status_message = "File saved";
     return 0;
+    */
 }

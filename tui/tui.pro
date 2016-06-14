@@ -1,7 +1,5 @@
 TEMPLATE = app
 
-CONFIG += release
-
 mac {
     CONFIG -= app_bundle
 }
